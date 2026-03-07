@@ -1,0 +1,12 @@
+{
+  "name": "fair-play",
+  "version": "1.0.0",
+  "description": "The Fair Play Method — a shared home management system for two",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}
