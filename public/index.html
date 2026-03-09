@@ -1,664 +1,1635 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fair Play — Our Home System</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --cream: #FAF7F2; --warm-white: #FFFDF9; --sand: #E8E0D0;
-    --terracotta: #C4714A; --terracotta-light: #D4896A;
-    --sage: #6B8C6E; --dusty-blue: #6B7FA3;
-    --charcoal: #2C2C2C; --mid-gray: #888; --light-gray: #D0CBC2;
-    --p1-color: #C4714A; --p2-color: #6B7FA3;
-    --shadow: 0 4px 24px rgba(44,44,44,0.08);
-    --shadow-lg: 0 12px 48px rgba(44,44,44,0.14);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--charcoal); min-height: 100vh; overflow-x: hidden; }
-  .screen { display: none; min-height: 100vh; }
-  .screen.active { display: flex; flex-direction: column; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fair Play — Our Home System</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --cream: #FAF7F2;
+      --warm-white: #FFFDF9;
+      --sand: #E8E0D0;
+      --terracotta: #C4714A;
+      --terracotta-light: #D4896A;
+      --sage: #6B8C6E;
+      --dusty-blue: #6B7FA3;
+      --charcoal: #2C2C2C;
+      --mid-gray: #888;
+      --light-gray: #D0CBC2;
+      --p1-color: #C4714A;
+      --p2-color: #6B7FA3;
+      --shadow: 0 4px 24px rgba(44, 44, 44, 0.08);
+      --shadow-lg: 0 12px 48px rgba(44, 44, 44, 0.14);
+    }
 
-  #welcome { background: var(--charcoal); align-items: center; justify-content: center; text-align: center; padding: 2rem; position: relative; overflow: hidden; }
-  #welcome::before { content:''; position:absolute; width:600px;height:600px; background:radial-gradient(circle,rgba(196,113,74,.18) 0%,transparent 70%); top:-100px;right:-100px;border-radius:50%; }
-  #welcome::after { content:''; position:absolute; width:400px;height:400px; background:radial-gradient(circle,rgba(107,127,163,.15) 0%,transparent 70%); bottom:-80px;left:-80px;border-radius:50%; }
-  .welcome-inner { position:relative;z-index:1;max-width:480px; }
-  .welcome-eyebrow { font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:var(--terracotta);margin-bottom:1.5rem; }
-  .welcome-title { font-family:'Playfair Display',serif;font-size:clamp(2.5rem,8vw,4rem);color:var(--cream);line-height:1.1;margin-bottom:1rem; }
-  .welcome-title em { color:var(--terracotta);font-style:italic; }
-  .welcome-sub { color:#9A9590;font-size:1rem;line-height:1.7;margin-bottom:2.5rem;font-weight:300; }
-  .btn-primary { background:var(--terracotta);color:white;border:none;padding:.9rem 2.2rem;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:500;border-radius:100px;cursor:pointer;transition:all .2s; }
-  .btn-primary:hover { background:var(--terracotta-light);transform:translateY(-1px);box-shadow:0 6px 20px rgba(196,113,74,.35); }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  #setup { background:var(--warm-white);align-items:center;justify-content:center;padding:2rem; }
-  .setup-card { background:white;border-radius:24px;padding:3rem 2.5rem;max-width:480px;width:100%;box-shadow:var(--shadow-lg); }
-  .setup-step { display:none; }
-  .setup-step.active { display:block; }
-  .setup-label { font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--mid-gray);margin-bottom:.5rem; }
-  .setup-title { font-family:'Playfair Display',serif;font-size:1.8rem;margin-bottom:.75rem;line-height:1.2; }
-  .setup-desc { color:var(--mid-gray);font-size:.9rem;margin-bottom:2rem;line-height:1.6; }
-  .player-inputs { display:flex;flex-direction:column;gap:1rem;margin-bottom:2rem; }
-  .player-input-group { display:flex;align-items:center;gap:.75rem; }
-  .player-dot { width:12px;height:12px;border-radius:50%;flex-shrink:0; }
-  .player-input-group input { flex:1;border:1.5px solid var(--sand);border-radius:12px;padding:.75rem 1rem;font-family:'DM Sans',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s;background:var(--cream); }
-  .player-input-group input:focus { border-color:var(--terracotta); }
-  .setup-progress { display:flex;gap:6px;margin-bottom:2rem; }
-  .progress-dot { width:6px;height:6px;border-radius:50%;background:var(--sand);transition:background .3s; }
-  .progress-dot.done { background:var(--terracotta); }
-  .identity-pick { display:flex;flex-direction:column;gap:.75rem;margin-bottom:2rem; }
-  .identity-btn { display:flex;align-items:center;gap:.85rem;padding:1rem 1.25rem;border-radius:14px;border:2px solid var(--sand);background:white;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif; }
-  .identity-btn:hover { border-color:var(--charcoal); }
-  .identity-dot { width:14px;height:14px;border-radius:50%;flex-shrink:0; }
-  .identity-name { font-size:.95rem;font-weight:500; }
-  .cpe-list { display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem; }
-  .cpe-item { display:flex;align-items:flex-start;gap:.6rem;background:var(--cream);border-radius:10px;padding:.6rem .75rem;font-size:.85rem;line-height:1.4; }
-  .cpe-letter { width:20px;height:20px;border-radius:6px;background:var(--charcoal);color:white;font-size:.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.05rem; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--charcoal);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-  #app { background:var(--cream); }
-  .app-header { background:white;border-bottom:1px solid var(--sand);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100; }
-  .app-logo { font-family:'Playfair Display',serif;font-size:1.2rem; }
-  .app-logo span { color:var(--terracotta);font-style:italic; }
-  .header-right { display:flex;align-items:center;gap:.6rem; }
-  .header-players { display:flex;gap:.4rem; }
-  .player-badge { display:flex;align-items:center;gap:.4rem;padding:.35rem .75rem;border-radius:100px;font-size:.8rem;font-weight:500; }
-  .player-badge-dot { width:8px;height:8px;border-radius:50%; }
-  .sync-indicator { display:flex;align-items:center;gap:.35rem;font-size:.72rem;color:var(--mid-gray);padding:.3rem .6rem;border-radius:100px;background:var(--cream); }
-  .sync-dot { width:7px;height:7px;border-radius:50%;background:var(--light-gray);transition:background .3s; }
-  .sync-dot.live { background:#6BAA6E;animation:pulse 2s infinite; }
-  .sync-dot.syncing { background:var(--terracotta);animation:pulse .6s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+    .screen {
+      display: none;
+      min-height: 100vh;
+    }
 
-  .app-nav { display:flex;background:white;border-bottom:1px solid var(--sand);overflow-x:auto; }
-  .nav-tab { padding:.9rem 1.25rem;font-size:.85rem;font-weight:500;color:var(--mid-gray);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s; }
-  .nav-tab.active { color:var(--terracotta);border-bottom-color:var(--terracotta); }
+    .screen.active {
+      display: flex;
+      flex-direction: column;
+    }
 
-  .activity-bar { background:white;border-bottom:1px solid var(--sand);padding:.6rem 1.5rem;display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--mid-gray);min-height:36px;overflow:hidden;flex-wrap:wrap; }
-  .act-item { display:flex;align-items:center;gap:.35rem;animation:slideIn .4s ease; }
-  @keyframes slideIn { from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none} }
-  .act-who { font-weight:600; }
+    #welcome {
+      background: var(--charcoal);
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
 
-  .tab-content { display:none;padding:1.5rem; }
-  .tab-content.active { display:block; }
+    #welcome::before {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(196, 113, 74, .18) 0%, transparent 70%);
+      top: -100px;
+      right: -100px;
+      border-radius: 50%;
+    }
 
-  .deal-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem; }
-  .deal-title { font-family:'Playfair Display',serif;font-size:1.4rem; }
-  .filter-row { display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem; }
-  .filter-chip { padding:.4rem .9rem;border-radius:100px;border:1.5px solid var(--sand);background:white;font-size:.8rem;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;color:var(--charcoal); }
-  .filter-chip.active { background:var(--charcoal);color:white;border-color:var(--charcoal); }
-  .cards-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.75rem; }
-  .card-item { background:white;border-radius:16px;padding:1rem;cursor:pointer;border:2px solid transparent;transition:all .2s;box-shadow:0 2px 8px rgba(44,44,44,.06);position:relative; }
-  .card-item:hover { transform:translateY(-2px);box-shadow:var(--shadow); }
-  .card-item.assigned-p1 { border-color:var(--p1-color);background:#FDF8F5; }
-  .card-item.assigned-p2 { border-color:var(--p2-color);background:#F5F7FB; }
-  .card-emoji { font-size:1.5rem;margin-bottom:.5rem; }
-  .card-name { font-size:.82rem;font-weight:500;line-height:1.3; }
-  .card-category { font-size:.7rem;color:var(--mid-gray);margin-top:.25rem;text-transform:uppercase;letter-spacing:.08em; }
-  .card-owner-badge { position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:600;color:white; }
+    #welcome::after {
+      content: '';
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(107, 127, 163, .15) 0%, transparent 70%);
+      bottom: -80px;
+      left: -80px;
+      border-radius: 50%;
+    }
 
-  .modal-overlay { display:none;position:fixed;inset:0;background:rgba(44,44,44,.5);z-index:200;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px); }
-  .modal-overlay.open { display:flex; }
-  .modal { background:white;border-radius:24px;padding:2rem;max-width:440px;width:100%;box-shadow:var(--shadow-lg);max-height:90vh;overflow-y:auto;animation:modalIn .25s ease; }
-  @keyframes modalIn { from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none} }
-  .modal-emoji { font-size:2.5rem;margin-bottom:.75rem; }
-  .modal-title { font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:.25rem; }
-  .modal-category { font-size:.75rem;color:var(--mid-gray);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1.25rem; }
-  .modal-section-title { font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--mid-gray);margin-bottom:.5rem;margin-top:1.25rem; }
-  .standard-textarea { width:100%;border:1.5px solid var(--sand);border-radius:12px;padding:.75rem;font-family:'DM Sans',sans-serif;font-size:.88rem;resize:vertical;min-height:80px;outline:none;transition:border-color .2s;background:var(--cream);line-height:1.5;color:var(--charcoal); }
-  .standard-textarea:focus { border-color:var(--terracotta); }
-  .assign-row { display:flex;gap:.6rem;margin-top:1.25rem; }
-  .assign-btn { flex:1;padding:.8rem;border-radius:12px;border:2px solid;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:500;cursor:pointer;transition:all .2s; }
-  .assign-btn.p1 { border-color:var(--p1-color);color:var(--p1-color);background:white; }
-  .assign-btn.p1:hover,.assign-btn.p1.active { background:var(--p1-color);color:white; }
-  .assign-btn.p2 { border-color:var(--p2-color);color:var(--p2-color);background:white; }
-  .assign-btn.p2:hover,.assign-btn.p2.active { background:var(--p2-color);color:white; }
-  .modal-actions { display:flex;gap:.6rem;margin-top:1.5rem; }
-  .btn-save { flex:1;background:var(--charcoal);color:white;border:none;padding:.85rem;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:500;cursor:pointer;transition:background .2s; }
-  .btn-save:hover { background:#444; }
-  .btn-cancel { background:var(--cream);color:var(--mid-gray);border:none;padding:.85rem 1.2rem;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;cursor:pointer; }
-  .unassign-btn { background:white;color:#c0392b;border:1.5px solid #f0d0cc;padding:.85rem 1rem;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.85rem;cursor:pointer; }
+    .welcome-inner {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+    }
 
-  .tracker-summary { display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.5rem; }
-  .summary-card { background:white;border-radius:16px;padding:1.25rem;box-shadow:0 2px 8px rgba(44,44,44,.06); }
-  .summary-player { font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.25rem; }
-  .summary-count { font-family:'Playfair Display',serif;font-size:2.5rem;line-height:1;margin-bottom:.25rem; }
-  .summary-label { font-size:.8rem;color:var(--mid-gray); }
-  .balance-bar-wrap { background:white;border-radius:16px;padding:1.25rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(44,44,44,.06); }
-  .balance-bar-title { font-size:.8rem;font-weight:500;margin-bottom:.75rem; }
-  .balance-bar-track { height:10px;background:var(--sand);border-radius:100px;overflow:hidden; }
-  .balance-bar-fill { height:100%;background:linear-gradient(to right,var(--p1-color),var(--p2-color));border-radius:100px;transition:width .6s ease; }
-  .balance-bar-labels { display:flex;justify-content:space-between;margin-top:.5rem;font-size:.78rem;color:var(--mid-gray); }
-  .tracker-list { display:flex;flex-direction:column;gap:.6rem; }
-  .tracker-item { background:white;border-radius:14px;padding:.9rem 1rem;display:flex;align-items:center;gap:.75rem;box-shadow:0 1px 4px rgba(44,44,44,.05); }
-  .tracker-emoji { font-size:1.2rem;width:32px;text-align:center; }
-  .tracker-info { flex:1; }
-  .tracker-name { font-size:.88rem;font-weight:500; }
-  .tracker-cat { font-size:.75rem;color:var(--mid-gray); }
-  .tracker-owner { font-size:.78rem;font-weight:600;padding:.3rem .7rem;border-radius:100px;color:white; }
-  .tracker-standard { font-size:.75rem;color:var(--mid-gray);font-style:italic;margin-top:.2rem;line-height:1.4; }
-  .tracker-changed-by { font-size:.7rem;color:var(--light-gray);margin-top:.15rem; }
+    .welcome-eyebrow {
+      font-size: .75rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--terracotta);
+      margin-bottom: 1.5rem;
+    }
 
-  .rebalance-intro { background:white;border-radius:16px;padding:1.25rem;margin-bottom:1.25rem;box-shadow:0 2px 8px rgba(44,44,44,.06);border-left:4px solid var(--sage); }
-  .rebalance-intro p { font-size:.88rem;line-height:1.6; }
-  .rebalance-grid { display:grid;gap:.75rem; }
-  .rebalance-item { background:white;border-radius:14px;padding:1rem;display:flex;align-items:center;gap:.75rem;box-shadow:0 1px 4px rgba(44,44,44,.05); }
-  .rebalance-emoji { font-size:1.3rem;width:32px;text-align:center; }
-  .rebalance-info { flex:1; }
-  .rebalance-name { font-size:.88rem;font-weight:500; }
-  .rebalance-assigned { font-size:.78rem;margin-top:.1rem; }
-  .swap-btn { background:var(--cream);border:1.5px solid var(--sand);border-radius:100px;padding:.35rem .8rem;font-size:.78rem;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;color:var(--charcoal);font-weight:500; }
-  .swap-btn:hover { background:var(--charcoal);color:white;border-color:var(--charcoal); }
+    .welcome-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.5rem, 8vw, 4rem);
+      color: var(--cream);
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
 
-  .empty-state { text-align:center;padding:3rem 1rem;color:var(--mid-gray); }
-  .empty-state-icon { font-size:2.5rem;margin-bottom:.75rem; }
-  .empty-state p { font-size:.9rem;line-height:1.6; }
-  .section-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem; }
-  .section-title { font-family:'Playfair Display',serif;font-size:1.3rem; }
-  .toast { position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--charcoal);color:white;padding:.75rem 1.5rem;border-radius:100px;font-size:.88rem;z-index:999;opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap; }
-  .toast.show { opacity:1; }
+    .welcome-title em {
+      color: var(--terracotta);
+      font-style: italic;
+    }
 
-  #loading-overlay { position:fixed;inset:0;background:var(--cream);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;transition:opacity .4s; }
-  #loading-overlay.fade { opacity:0;pointer-events:none; }
-  .loading-logo { font-family:'Playfair Display',serif;font-size:2rem;color:var(--charcoal); }
-  .loading-logo span { color:var(--terracotta);font-style:italic; }
-  .loading-dots { display:flex;gap:.4rem; }
-  .loading-dot { width:8px;height:8px;border-radius:50%;background:var(--terracotta);animation:bounce .9s infinite; }
-  .loading-dot:nth-child(2){animation-delay:.15s} .loading-dot:nth-child(3){animation-delay:.3s}
-  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-</style>
+    .welcome-sub {
+      color: #9A9590;
+      font-size: 1rem;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+      font-weight: 300;
+    }
+
+    .btn-primary {
+      background: var(--terracotta);
+      color: white;
+      border: none;
+      padding: .9rem 2.2rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .95rem;
+      font-weight: 500;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .btn-primary:hover {
+      background: var(--terracotta-light);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(196, 113, 74, .35);
+    }
+
+    #setup {
+      background: var(--warm-white);
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .setup-card {
+      background: white;
+      border-radius: 24px;
+      padding: 3rem 2.5rem;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .setup-step {
+      display: none;
+    }
+
+    .setup-step.active {
+      display: block;
+    }
+
+    .setup-label {
+      font-size: .75rem;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--mid-gray);
+      margin-bottom: .5rem;
+    }
+
+    .setup-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      margin-bottom: .75rem;
+      line-height: 1.2;
+    }
+
+    .setup-desc {
+      color: var(--mid-gray);
+      font-size: .9rem;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .player-inputs {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .player-input-group {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+
+    .player-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .player-input-group input {
+      flex: 1;
+      border: 1.5px solid var(--sand);
+      border-radius: 12px;
+      padding: .75rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .95rem;
+      outline: none;
+      transition: border-color .2s;
+      background: var(--cream);
+    }
+
+    .player-input-group input:focus {
+      border-color: var(--terracotta);
+    }
+
+    .setup-progress {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 2rem;
+    }
+
+    .progress-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--sand);
+      transition: background .3s;
+    }
+
+    .progress-dot.done {
+      background: var(--terracotta);
+    }
+
+    .identity-pick {
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+      margin-bottom: 2rem;
+    }
+
+    .identity-btn {
+      display: flex;
+      align-items: center;
+      gap: .85rem;
+      padding: 1rem 1.25rem;
+      border-radius: 14px;
+      border: 2px solid var(--sand);
+      background: white;
+      cursor: pointer;
+      transition: all .2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .identity-btn:hover {
+      border-color: var(--charcoal);
+    }
+
+    .identity-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .identity-name {
+      font-size: .95rem;
+      font-weight: 500;
+    }
+
+    .cpe-list {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+      margin-bottom: 1rem;
+    }
+
+    .cpe-item {
+      display: flex;
+      align-items: flex-start;
+      gap: .6rem;
+      background: var(--cream);
+      border-radius: 10px;
+      padding: .6rem .75rem;
+      font-size: .85rem;
+      line-height: 1.4;
+    }
+
+    .cpe-letter {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      background: var(--charcoal);
+      color: white;
+      font-size: .7rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: .05rem;
+    }
+
+    #app {
+      background: var(--cream);
+    }
+
+    .app-header {
+      background: white;
+      border-bottom: 1px solid var(--sand);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .app-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+    }
+
+    .app-logo span {
+      color: var(--terracotta);
+      font-style: italic;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+
+    .header-players {
+      display: flex;
+      gap: .4rem;
+    }
+
+    .player-badge {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .35rem .75rem;
+      border-radius: 100px;
+      font-size: .8rem;
+      font-weight: 500;
+    }
+
+    .player-badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .sync-indicator {
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+      font-size: .72rem;
+      color: var(--mid-gray);
+      padding: .3rem .6rem;
+      border-radius: 100px;
+      background: var(--cream);
+    }
+
+    .sync-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--light-gray);
+      transition: background .3s;
+    }
+
+    .sync-dot.live {
+      background: #6BAA6E;
+      animation: pulse 2s infinite;
+    }
+
+    .sync-dot.syncing {
+      background: var(--terracotta);
+      animation: pulse .6s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .4
+      }
+    }
+
+    .app-nav {
+      display: flex;
+      background: white;
+      border-bottom: 1px solid var(--sand);
+      overflow-x: auto;
+    }
+
+    .nav-tab {
+      padding: .9rem 1.25rem;
+      font-size: .85rem;
+      font-weight: 500;
+      color: var(--mid-gray);
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: all .2s;
+    }
+
+    .nav-tab.active {
+      color: var(--terracotta);
+      border-bottom-color: var(--terracotta);
+    }
+
+    .activity-bar {
+      background: white;
+      border-bottom: 1px solid var(--sand);
+      padding: .6rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .78rem;
+      color: var(--mid-gray);
+      min-height: 36px;
+      overflow: hidden;
+      flex-wrap: wrap;
+    }
+
+    .act-item {
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+      animation: slideIn .4s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-8px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .act-who {
+      font-weight: 600;
+    }
+
+    .tab-content {
+      display: none;
+      padding: 1.5rem;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .deal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: .75rem;
+    }
+
+    .deal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+
+    .filter-chip {
+      padding: .4rem .9rem;
+      border-radius: 100px;
+      border: 1.5px solid var(--sand);
+      background: white;
+      font-size: .8rem;
+      cursor: pointer;
+      transition: all .2s;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--charcoal);
+    }
+
+    .filter-chip.active {
+      background: var(--charcoal);
+      color: white;
+      border-color: var(--charcoal);
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: .75rem;
+    }
+
+    .card-item {
+      background: white;
+      border-radius: 16px;
+      padding: 1rem;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all .2s;
+      box-shadow: 0 2px 8px rgba(44, 44, 44, .06);
+      position: relative;
+    }
+
+    .card-item:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .card-item.assigned-p1 {
+      border-color: var(--p1-color);
+      background: #FDF8F5;
+    }
+
+    .card-item.assigned-p2 {
+      border-color: var(--p2-color);
+      background: #F5F7FB;
+    }
+
+    .card-emoji {
+      font-size: 1.5rem;
+      margin-bottom: .5rem;
+    }
+
+    .card-name {
+      font-size: .82rem;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+
+    .card-category {
+      font-size: .7rem;
+      color: var(--mid-gray);
+      margin-top: .25rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .card-owner-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .65rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(44, 44, 44, .5);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 24px;
+      padding: 2rem;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: modalIn .25s ease;
+    }
+
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: translateY(16px) scale(.97)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .modal-emoji {
+      font-size: 2.5rem;
+      margin-bottom: .75rem;
+    }
+
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      margin-bottom: .25rem;
+    }
+
+    .modal-category {
+      font-size: .75rem;
+      color: var(--mid-gray);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-bottom: 1.25rem;
+    }
+
+    .modal-section-title {
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--mid-gray);
+      margin-bottom: .5rem;
+      margin-top: 1.25rem;
+    }
+
+    .standard-textarea {
+      width: 100%;
+      border: 1.5px solid var(--sand);
+      border-radius: 12px;
+      padding: .75rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .88rem;
+      resize: vertical;
+      min-height: 80px;
+      outline: none;
+      transition: border-color .2s;
+      background: var(--cream);
+      line-height: 1.5;
+      color: var(--charcoal);
+    }
+
+    .standard-textarea:focus {
+      border-color: var(--terracotta);
+    }
+
+    .assign-row {
+      display: flex;
+      gap: .6rem;
+      margin-top: 1.25rem;
+    }
+
+    .assign-btn {
+      flex: 1;
+      padding: .8rem;
+      border-radius: 12px;
+      border: 2px solid;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .assign-btn.p1 {
+      border-color: var(--p1-color);
+      color: var(--p1-color);
+      background: white;
+    }
+
+    .assign-btn.p1:hover,
+    .assign-btn.p1.active {
+      background: var(--p1-color);
+      color: white;
+    }
+
+    .assign-btn.p2 {
+      border-color: var(--p2-color);
+      color: var(--p2-color);
+      background: white;
+    }
+
+    .assign-btn.p2:hover,
+    .assign-btn.p2.active {
+      background: var(--p2-color);
+      color: white;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: .6rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn-save {
+      flex: 1;
+      background: var(--charcoal);
+      color: white;
+      border: none;
+      padding: .85rem;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .btn-save:hover {
+      background: #444;
+    }
+
+    .btn-cancel {
+      background: var(--cream);
+      color: var(--mid-gray);
+      border: none;
+      padding: .85rem 1.2rem;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .9rem;
+      cursor: pointer;
+    }
+
+    .unassign-btn {
+      background: white;
+      color: #c0392b;
+      border: 1.5px solid #f0d0cc;
+      padding: .85rem 1rem;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .85rem;
+      cursor: pointer;
+    }
+
+    .tracker-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .summary-card {
+      background: white;
+      border-radius: 16px;
+      padding: 1.25rem;
+      box-shadow: 0 2px 8px rgba(44, 44, 44, .06);
+    }
+
+    .summary-player {
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-bottom: .25rem;
+    }
+
+    .summary-count {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      line-height: 1;
+      margin-bottom: .25rem;
+    }
+
+    .summary-label {
+      font-size: .8rem;
+      color: var(--mid-gray);
+    }
+
+    .balance-bar-wrap {
+      background: white;
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 8px rgba(44, 44, 44, .06);
+    }
+
+    .balance-bar-title {
+      font-size: .8rem;
+      font-weight: 500;
+      margin-bottom: .75rem;
+    }
+
+    .balance-bar-track {
+      height: 10px;
+      background: var(--sand);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .balance-bar-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--p1-color), var(--p2-color));
+      border-radius: 100px;
+      transition: width .6s ease;
+    }
+
+    .balance-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: .5rem;
+      font-size: .78rem;
+      color: var(--mid-gray);
+    }
+
+    .tracker-list {
+      display: flex;
+      flex-direction: column;
+      gap: .6rem;
+    }
+
+    .tracker-item {
+      background: white;
+      border-radius: 14px;
+      padding: .9rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      box-shadow: 0 1px 4px rgba(44, 44, 44, .05);
+    }
+
+    .tracker-emoji {
+      font-size: 1.2rem;
+      width: 32px;
+      text-align: center;
+    }
+
+    .tracker-info {
+      flex: 1;
+    }
+
+    .tracker-name {
+      font-size: .88rem;
+      font-weight: 500;
+    }
+
+    .tracker-cat {
+      font-size: .75rem;
+      color: var(--mid-gray);
+    }
+
+    .tracker-owner {
+      font-size: .78rem;
+      font-weight: 600;
+      padding: .3rem .7rem;
+      border-radius: 100px;
+      color: white;
+    }
+
+    .tracker-standard {
+      font-size: .75rem;
+      color: var(--mid-gray);
+      font-style: italic;
+      margin-top: .2rem;
+      line-height: 1.4;
+    }
+
+    .tracker-changed-by {
+      font-size: .7rem;
+      color: var(--light-gray);
+      margin-top: .15rem;
+    }
+
+    .rebalance-intro {
+      background: white;
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 2px 8px rgba(44, 44, 44, .06);
+      border-left: 4px solid var(--sage);
+    }
+
+    .rebalance-intro p {
+      font-size: .88rem;
+      line-height: 1.6;
+    }
+
+    .rebalance-grid {
+      display: grid;
+      gap: .75rem;
+    }
+
+    .rebalance-item {
+      background: white;
+      border-radius: 14px;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      box-shadow: 0 1px 4px rgba(44, 44, 44, .05);
+    }
+
+    .rebalance-emoji {
+      font-size: 1.3rem;
+      width: 32px;
+      text-align: center;
+    }
+
+    .rebalance-info {
+      flex: 1;
+    }
+
+    .rebalance-name {
+      font-size: .88rem;
+      font-weight: 500;
+    }
+
+    .rebalance-assigned {
+      font-size: .78rem;
+      margin-top: .1rem;
+    }
+
+    .swap-btn {
+      background: var(--cream);
+      border: 1.5px solid var(--sand);
+      border-radius: 100px;
+      padding: .35rem .8rem;
+      font-size: .78rem;
+      cursor: pointer;
+      transition: all .2s;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--charcoal);
+      font-weight: 500;
+    }
+
+    .swap-btn:hover {
+      background: var(--charcoal);
+      color: white;
+      border-color: var(--charcoal);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--mid-gray);
+    }
+
+    .empty-state-icon {
+      font-size: 2.5rem;
+      margin-bottom: .75rem;
+    }
+
+    .empty-state p {
+      font-size: .9rem;
+      line-height: 1.6;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--charcoal);
+      color: white;
+      padding: .75rem 1.5rem;
+      border-radius: 100px;
+      font-size: .88rem;
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--cream);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
+      transition: opacity .4s;
+    }
+
+    #loading-overlay.fade {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: var(--charcoal);
+    }
+
+    .loading-logo span {
+      color: var(--terracotta);
+      font-style: italic;
+    }
+
+    .loading-dots {
+      display: flex;
+      gap: .4rem;
+    }
+
+    .loading-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--terracotta);
+      animation: bounce .9s infinite;
+    }
+
+    .loading-dot:nth-child(2) {
+      animation-delay: .15s
+    }
+
+    .loading-dot:nth-child(3) {
+      animation-delay: .3s
+    }
+
+    @keyframes bounce {
+
+      0%,
+      100% {
+        transform: translateY(0)
+      }
+
+      50% {
+        transform: translateY(-6px)
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<div id="loading-overlay">
-  <div class="loading-logo">Fair <span>Play</span></div>
-  <div class="loading-dots"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div></div>
-</div>
-
-<div id="welcome" class="screen">
-  <div style="background:var(--charcoal);flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:2rem;position:relative;overflow:hidden;">
-    <div style="position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(196,113,74,.18) 0%,transparent 70%);top:-100px;right:-100px;border-radius:50%;"></div>
-    <div style="position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(107,127,163,.15) 0%,transparent 70%);bottom:-80px;left:-80px;border-radius:50%;"></div>
-    <div style="position:relative;z-index:1;max-width:480px;">
-      <p style="font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:var(--terracotta);margin-bottom:1.5rem;">The Fair Play Method</p>
-      <h1 style="font-family:'Playfair Display',serif;font-size:clamp(2.5rem,8vw,4rem);color:var(--cream);line-height:1.1;margin-bottom:1rem;">Run your home <em style="color:var(--terracotta);">together</em></h1>
-      <p style="color:#9A9590;font-size:1rem;line-height:1.7;margin-bottom:2.5rem;font-weight:300;">Deal cards, own the work, keep things fair — a live shared system for two.</p>
-      <button class="btn-primary" onclick="goToSetup()">Get Started →</button>
+  <div id="loading-overlay">
+    <div class="loading-logo">Fair <span>Play</span></div>
+    <div class="loading-dots">
+      <div class="loading-dot"></div>
+      <div class="loading-dot"></div>
+      <div class="loading-dot"></div>
     </div>
   </div>
-</div>
 
-<div id="setup" class="screen" style="background:var(--warm-white);align-items:center;justify-content:center;padding:2rem;">
-  <div class="setup-card">
-    <div class="setup-progress">
-      <div class="progress-dot done" id="dot-1"></div>
-      <div class="progress-dot" id="dot-2"></div>
-      <div class="progress-dot" id="dot-3"></div>
-    </div>
-    <div class="setup-step active" id="step-1">
-      <p class="setup-label">Step 1 of 3</p>
-      <h2 class="setup-title">Who's playing?</h2>
-      <p class="setup-desc">Enter both partners' names. These are shared and saved to your server.</p>
-      <div class="player-inputs">
-        <div class="player-input-group">
-          <div class="player-dot" style="background:var(--p1-color)"></div>
-          <input type="text" id="p1name" placeholder="Partner 1 name" maxlength="20">
-        </div>
-        <div class="player-input-group">
-          <div class="player-dot" style="background:var(--p2-color)"></div>
-          <input type="text" id="p2name" placeholder="Partner 2 name" maxlength="20">
-        </div>
+  <div id="welcome" class="screen">
+    <div
+      style="background:var(--charcoal);flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:2rem;position:relative;overflow:hidden;">
+      <div
+        style="position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(196,113,74,.18) 0%,transparent 70%);top:-100px;right:-100px;border-radius:50%;">
       </div>
-      <button class="btn-primary" onclick="setupStep2()">Continue →</button>
-    </div>
-    <div class="setup-step" id="step-2">
-      <p class="setup-label">Step 2 of 3</p>
-      <h2 class="setup-title">Who are you?</h2>
-      <p class="setup-desc">Pick yourself so the app knows who's making changes. Your partner does the same on their device.</p>
-      <div class="identity-pick" id="identity-pick"></div>
-    </div>
-    <div class="setup-step" id="step-3">
-      <p class="setup-label">Step 3 of 3</p>
-      <h2 class="setup-title">How it works</h2>
-      <p class="setup-desc">Each card = a full task. Whoever holds it owns all three steps:</p>
-      <div class="cpe-list" style="margin-bottom:1.25rem;">
-        <div class="cpe-item"><div class="cpe-letter">C</div><div><strong>Conceive</strong> — notice the need</div></div>
-        <div class="cpe-item"><div class="cpe-letter">P</div><div><strong>Plan</strong> — figure out how & when</div></div>
-        <div class="cpe-item"><div class="cpe-letter">E</div><div><strong>Execute</strong> — do it, fully</div></div>
+      <div
+        style="position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(107,127,163,.15) 0%,transparent 70%);bottom:-80px;left:-80px;border-radius:50%;">
       </div>
-      <p style="font-size:.82rem;color:var(--mid-gray);margin-bottom:1.5rem;line-height:1.6;background:var(--cream);padding:.75rem 1rem;border-radius:10px;">🔄 <strong>Live sync:</strong> All changes save to your server instantly and appear on both devices.</p>
-      <button class="btn-primary" onclick="launchApp()">Start Dealing Cards →</button>
-    </div>
-  </div>
-</div>
-
-<div id="app" class="screen">
-  <header class="app-header">
-    <div class="app-logo">Fair <span>Play</span></div>
-    <div class="header-right">
-      <div class="sync-indicator">
-        <div class="sync-dot" id="sync-dot"></div>
-        <span id="sync-label">live</span>
-      </div>
-      <div class="header-players">
-        <div class="player-badge" style="background:#FDF3EE">
-          <div class="player-badge-dot" style="background:var(--p1-color)"></div>
-          <span id="header-p1" style="color:var(--p1-color)"></span>
-        </div>
-        <div class="player-badge" style="background:#F0F3F8">
-          <div class="player-badge-dot" style="background:var(--p2-color)"></div>
-          <span id="header-p2" style="color:var(--p2-color)"></span>
-        </div>
+      <div style="position:relative;z-index:1;max-width:480px;">
+        <p
+          style="font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:var(--terracotta);margin-bottom:1.5rem;">
+          The Fair Play Method</p>
+        <h1
+          style="font-family:'Playfair Display',serif;font-size:clamp(2.5rem,8vw,4rem);color:var(--cream);line-height:1.1;margin-bottom:1rem;">
+          Run your home <em style="color:var(--terracotta);">together</em></h1>
+        <p style="color:#9A9590;font-size:1rem;line-height:1.7;margin-bottom:2.5rem;font-weight:300;">Deal cards, own
+          the work, keep things fair — a live shared system for two.</p>
+        <button class="btn-primary" onclick="goToSetup()">Get Started →</button>
       </div>
     </div>
-  </header>
-  <div class="activity-bar" id="activity-bar">
-    <span style="color:var(--light-gray);font-size:.78rem;">Recent activity will appear here…</span>
   </div>
-  <nav class="app-nav">
-    <button class="nav-tab active" onclick="switchTab('deal',this)">🃏 Deal Cards</button>
-    <button class="nav-tab" onclick="switchTab('tracker',this)">📋 Tracker</button>
-    <button class="nav-tab" onclick="switchTab('rebalance',this)">⚖️ Rebalance</button>
-  </nav>
-  <div id="tab-deal" class="tab-content active">
-    <div class="deal-header">
-      <h2 class="deal-title">Deal the Cards</h2>
-      <span id="deal-count" style="font-size:.82rem;color:var(--mid-gray)"></span>
+
+  <div id="setup" class="screen"
+    style="background:var(--warm-white);align-items:center;justify-content:center;padding:2rem;">
+    <div class="setup-card">
+      <div class="setup-progress">
+        <div class="progress-dot done" id="dot-1"></div>
+        <div class="progress-dot" id="dot-2"></div>
+        <div class="progress-dot" id="dot-3"></div>
+      </div>
+      <div class="setup-step active" id="step-1">
+        <p class="setup-label">Step 1 of 3</p>
+        <h2 class="setup-title">Who's playing?</h2>
+        <p class="setup-desc">Enter both partners' names. These are shared and saved to your server.</p>
+        <div class="player-inputs">
+          <div class="player-input-group">
+            <div class="player-dot" style="background:var(--p1-color)"></div>
+            <input type="text" id="p1name" placeholder="Partner 1 name" maxlength="20">
+          </div>
+          <div class="player-input-group">
+            <div class="player-dot" style="background:var(--p2-color)"></div>
+            <input type="text" id="p2name" placeholder="Partner 2 name" maxlength="20">
+          </div>
+        </div>
+        <button class="btn-primary" onclick="setupStep2()">Continue →</button>
+      </div>
+      <div class="setup-step" id="step-2">
+        <p class="setup-label">Step 2 of 3</p>
+        <h2 class="setup-title">Who are you?</h2>
+        <p class="setup-desc">Pick yourself so the app knows who's making changes. Your partner does the same on their
+          device.</p>
+        <div class="identity-pick" id="identity-pick"></div>
+      </div>
+      <div class="setup-step" id="step-3">
+        <p class="setup-label">Step 3 of 3</p>
+        <h2 class="setup-title">How it works</h2>
+        <p class="setup-desc">Each card = a full task. Whoever holds it owns all three steps:</p>
+        <div class="cpe-list" style="margin-bottom:1.25rem;">
+          <div class="cpe-item">
+            <div class="cpe-letter">C</div>
+            <div><strong>Conceive</strong> — notice the need</div>
+          </div>
+          <div class="cpe-item">
+            <div class="cpe-letter">P</div>
+            <div><strong>Plan</strong> — figure out how & when</div>
+          </div>
+          <div class="cpe-item">
+            <div class="cpe-letter">E</div>
+            <div><strong>Execute</strong> — do it, fully</div>
+          </div>
+        </div>
+        <p
+          style="font-size:.82rem;color:var(--mid-gray);margin-bottom:1.5rem;line-height:1.6;background:var(--cream);padding:.75rem 1rem;border-radius:10px;">
+          🔄 <strong>Live sync:</strong> All changes save to your server instantly and appear on both devices.</p>
+        <button class="btn-primary" onclick="launchApp()">Start Dealing Cards →</button>
+      </div>
     </div>
-    <div class="filter-row" id="filter-row"></div>
-    <div class="cards-grid" id="cards-grid"></div>
   </div>
-  <div id="tab-tracker" class="tab-content">
-    <div class="section-header"><h2 class="section-title">Who Owns What</h2></div>
-    <div class="tracker-summary" id="tracker-summary"></div>
-    <div class="balance-bar-wrap">
-      <div class="balance-bar-title">Load balance</div>
-      <div class="balance-bar-track"><div class="balance-bar-fill" id="balance-fill" style="width:50%"></div></div>
-      <div class="balance-bar-labels"><span id="balance-p1-label"></span><span id="balance-p2-label"></span></div>
+
+  <div id="app" class="screen">
+    <header class="app-header">
+      <div class="app-logo">Fair <span>Play</span></div>
+      <div class="header-right">
+        <div class="sync-indicator">
+          <div class="sync-dot" id="sync-dot"></div>
+          <span id="sync-label">live</span>
+        </div>
+        <div class="header-players">
+          <div class="player-badge" style="background:#FDF3EE">
+            <div class="player-badge-dot" style="background:var(--p1-color)"></div>
+            <span id="header-p1" style="color:var(--p1-color)"></span>
+          </div>
+          <div class="player-badge" style="background:#F0F3F8">
+            <div class="player-badge-dot" style="background:var(--p2-color)"></div>
+            <span id="header-p2" style="color:var(--p2-color)"></span>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="activity-bar" id="activity-bar">
+      <span style="color:var(--light-gray);font-size:.78rem;">Recent activity will appear here…</span>
     </div>
-    <div class="tracker-list" id="tracker-list"></div>
-  </div>
-  <div id="tab-rebalance" class="tab-content">
-    <div class="rebalance-intro"><p>Fair doesn't mean 50/50 — it means <strong>intentional</strong>. Swap any card that feels off. Talk about capacity, not scorekeeping.</p></div>
-    <div class="rebalance-grid" id="rebalance-grid"></div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
-  <div class="modal">
-    <div id="modal-emoji" class="modal-emoji"></div>
-    <h3 class="modal-title" id="modal-title"></h3>
-    <p class="modal-category" id="modal-category"></p>
-    <p class="modal-section-title">What this card includes (CPE)</p>
-    <div class="cpe-list" id="modal-cpe"></div>
-    <p class="modal-section-title">Our standard for this card</p>
-    <textarea class="standard-textarea" id="modal-standard" placeholder="e.g. 'Done when fridge has 4+ days of meals, shopping done by Sunday'"></textarea>
-    <p class="modal-section-title">Assign to</p>
-    <div class="assign-row">
-      <button class="assign-btn p1" id="assign-p1-btn" onclick="setAssignee('p1')"></button>
-      <button class="assign-btn p2" id="assign-p2-btn" onclick="setAssignee('p2')"></button>
+    <nav class="app-nav">
+      <button class="nav-tab active" onclick="switchTab('deal',this)">🃏 Deal Cards</button>
+      <button class="nav-tab" onclick="switchTab('tracker',this)">📋 Tracker</button>
+      <button class="nav-tab" onclick="switchTab('rebalance',this)">⚖️ Rebalance</button>
+    </nav>
+    <!-- Reset button (put somewhere subtle, like a settings footer) -->
+    <div style="text-align:center; padding: 2rem 0 1rem; opacity: 0.5;">
+      <button onclick="resetApp()" style="
+          background: none;
+          border: 1px solid #888;
+          color: #888;
+          padding: 0.4rem 1rem;
+          border-radius: 6px;
+          font-size: 0.75rem;
+          cursor: pointer;
+          font-family: inherit;
+        ">⚠ Reset All Data</button>
     </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="unassign-btn" id="unassign-btn" onclick="unassignCard()" style="display:none">Remove</button>
-      <button class="btn-save" onclick="saveCard()">Save ✓</button>
+
+    <div id="tab-deal" class="tab-content active">
+      <div class="deal-header">
+        <h2 class="deal-title">Deal the Cards</h2>
+        <span id="deal-count" style="font-size:.82rem;color:var(--mid-gray)"></span>
+      </div>
+      <div class="filter-row" id="filter-row"></div>
+      <div class="cards-grid" id="cards-grid"></div>
+    </div>
+    <div id="tab-tracker" class="tab-content">
+      <div class="section-header">
+        <h2 class="section-title">Who Owns What</h2>
+      </div>
+      <div class="tracker-summary" id="tracker-summary"></div>
+      <div class="balance-bar-wrap">
+        <div class="balance-bar-title">Load balance</div>
+        <div class="balance-bar-track">
+          <div class="balance-bar-fill" id="balance-fill" style="width:50%"></div>
+        </div>
+        <div class="balance-bar-labels"><span id="balance-p1-label"></span><span id="balance-p2-label"></span></div>
+      </div>
+      <div class="tracker-list" id="tracker-list"></div>
+    </div>
+    <div id="tab-rebalance" class="tab-content">
+      <div class="rebalance-intro">
+        <p>Fair doesn't mean 50/50 — it means <strong>intentional</strong>. Swap any card that feels off. Talk about
+          capacity, not scorekeeping.</p>
+      </div>
+      <div class="rebalance-grid" id="rebalance-grid"></div>
     </div>
   </div>
-</div>
 
-<div class="toast" id="toast"></div>
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+    <div class="modal">
+      <div id="modal-emoji" class="modal-emoji"></div>
+      <h3 class="modal-title" id="modal-title"></h3>
+      <p class="modal-category" id="modal-category"></p>
+      <p class="modal-section-title">What this card includes (CPE)</p>
+      <div class="cpe-list" id="modal-cpe"></div>
+      <p class="modal-section-title">Our standard for this card</p>
+      <textarea class="standard-textarea" id="modal-standard"
+        placeholder="e.g. 'Done when fridge has 4+ days of meals, shopping done by Sunday'"></textarea>
+      <p class="modal-section-title">Assign to</p>
+      <div class="assign-row">
+        <button class="assign-btn p1" id="assign-p1-btn" onclick="setAssignee('p1')"></button>
+        <button class="assign-btn p2" id="assign-p2-btn" onclick="setAssignee('p2')"></button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="unassign-btn" id="unassign-btn" onclick="unassignCard()" style="display:none">Remove</button>
+        <button class="btn-save" onclick="saveCard()">Save ✓</button>
+      </div>
+    </div>
+  </div>
 
-<script>
-const CARDS = [
-  {id:1,name:"Meals (weekdays)",emoji:"🍳",category:"Home",cpe:["Notice when meal plan runs out","Plan weekly menu & shopping list","Cook or prep weekday meals"]},
-  {id:2,name:"Meals (weekends)",emoji:"🥘",category:"Home",cpe:["Decide weekend meal vibe","Source ingredients or plan takeout","Cook/order & serve meals"]},
-  {id:3,name:"Grocery shopping",emoji:"🛒",category:"Home",cpe:["Track what's running low","Write the full list","Do the shop & put away"]},
-  {id:4,name:"Laundry",emoji:"👕",category:"Home",cpe:["Notice when laundry needs doing","Sort & schedule washes","Wash, dry, fold & put away"]},
-  {id:5,name:"Tidying & declutter",emoji:"🧹",category:"Home",cpe:["Notice mess & clutter buildup","Decide what to tackle","Tidy and put things away"]},
-  {id:6,name:"Deep cleaning",emoji:"🫧",category:"Home",cpe:["Know cleaning schedule","Organise supplies & timing","Clean bathrooms, floors, surfaces"]},
-  {id:7,name:"Dishes & kitchen",emoji:"🍽️",category:"Home",cpe:["Notice when kitchen needs attention","Plan dish rotation","Wash up & wipe down kitchen"]},
-  {id:8,name:"Home repairs",emoji:"🔧",category:"Home",cpe:["Notice & log what's broken","Research fix or book tradesperson","Fix it or manage the repair"]},
-  {id:9,name:"Bills & finances",emoji:"💳",category:"Home",cpe:["Track bills & due dates","Review budget & spending","Pay bills, manage accounts"]},
-  {id:10,name:"Home admin",emoji:"📄",category:"Home",cpe:["Know what paperwork is pending","Organise documents & renewals","File, submit, renew"]},
-  {id:11,name:"Morning routine",emoji:"☀️",category:"Kids",cpe:["Know wake times & schedule","Prepare clothes/bag night before","Wake, dress, feed & get out door"]},
-  {id:12,name:"Bedtime routine",emoji:"🌙",category:"Kids",cpe:["Know bedtime needs & schedule","Set up bath/books/routine","Bath, stories, settle to sleep"]},
-  {id:13,name:"Feeding (day)",emoji:"🥣",category:"Kids",cpe:["Know dietary needs & schedule","Prep ingredients & snacks","Prepare & serve all meals/snacks"]},
-  {id:14,name:"Childcare logistics",emoji:"🏡",category:"Kids",cpe:["Track childcare schedule & gaps","Book, communicate with carers","Drop-off, pick-up, payment"]},
-  {id:15,name:"Doctor & health",emoji:"🩺",category:"Kids",cpe:["Track health needs & checkups","Book appointments","Attend & follow up on care"]},
-  {id:16,name:"Playdates",emoji:"👶",category:"Kids",cpe:["Notice social needs","Plan & coordinate with other families","Host or transport to playdate"]},
-  {id:17,name:"Activities & classes",emoji:"🎨",category:"Kids",cpe:["Research suitable activities","Book, manage schedule & fees","Transport & attend with child"]},
-  {id:18,name:"Emotional support",emoji:"🫶",category:"Kids",cpe:["Notice child's emotional state","Think through how to respond","Be present & support child"]},
-  {id:19,name:"Toys & supplies",emoji:"🧸",category:"Kids",cpe:["Track what's needed/outgrown","Research & order","Buy, organise & maintain"]},
-  {id:20,name:"Sleep support",emoji:"😴",category:"Kids",cpe:["Know sleep patterns & needs","Plan sleep approach","Handle night waking & settling"]},
-  {id:21,name:"Social planning",emoji:"🗓️",category:"Out",cpe:["Track social obligations & desires","Plan dates, events, visits","Book, confirm & manage attendance"]},
-  {id:22,name:"Gifts & cards",emoji:"🎁",category:"Out",cpe:["Track birthdays & events","Choose thoughtful gifts","Buy, wrap & send on time"]},
-  {id:23,name:"Travel planning",emoji:"✈️",category:"Out",cpe:["Know upcoming travel needs","Research & book transport/stays","Manage packing & logistics"]},
-  {id:24,name:"Family visits",emoji:"👨‍👩‍👧",category:"Out",cpe:["Track when family is due/wants visit","Plan visit timing & arrangements","Host or travel & manage visit"]},
-  {id:25,name:"Date nights",emoji:"💑",category:"Out",cpe:["Prioritise couple time","Plan date & book babysitter","Execute the plan"]},
-  {id:26,name:"Exercise & movement",emoji:"🏃",category:"Wellbeing",cpe:["Prioritise physical health","Schedule workouts","Show up & do the work"]},
-  {id:27,name:"Mental health check-ins",emoji:"🧠",category:"Wellbeing",cpe:["Notice emotional load levels","Plan check-in conversations","Have honest conversation together"]},
-  {id:28,name:"Unicorn Space",emoji:"🦄",category:"Wellbeing",cpe:["Know what brings you alive","Protect time for it","Actually do it — no guilt"]},
-  {id:29,name:"Self-care",emoji:"🛁",category:"Wellbeing",cpe:["Notice personal depletion","Plan rest & recovery time","Take the time you need"]},
-  {id:30,name:"Couple check-in",emoji:"💬",category:"Wellbeing",cpe:["Notice relationship needs","Schedule a check-in","Talk honestly about the system"]},
-];
-const CATEGORIES = ["All",...new Set(CARDS.map(c=>c.category))];
+  <div class="toast" id="toast"></div>
 
-let me = null, p1name = '', p2name = '';
-let sharedData = {p1:'',p2:'',cards:{},activity:[]};
-let lastHash = '';
-let activeFilter = 'All';
-let editingCard = null, pendingOwner = null;
 
-// ── API ──
-async function apiGet() {
-  const r = await fetch('/api/data'); return r.json();
-}
-async function apiSet(data) {
-  await fetch('/api/data', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-}
+  <script>
+    const CARDS = [
+      { id: 1, name: "Meals (weekdays)", emoji: "🍳", category: "Home", cpe: ["Notice when meal plan runs out", "Plan weekly menu & shopping list", "Cook or prep weekday meals"] },
+      { id: 2, name: "Meals (weekends)", emoji: "🥘", category: "Home", cpe: ["Decide weekend meal vibe", "Source ingredients or plan takeout", "Cook/order & serve meals"] },
+      { id: 3, name: "Grocery shopping", emoji: "🛒", category: "Home", cpe: ["Track what's running low", "Write the full list", "Do the shop & put away"] },
+      { id: 4, name: "Laundry", emoji: "👕", category: "Home", cpe: ["Notice when laundry needs doing", "Sort & schedule washes", "Wash, dry, fold & put away"] },
+      { id: 5, name: "Tidying & declutter", emoji: "🧹", category: "Home", cpe: ["Notice mess & clutter buildup", "Decide what to tackle", "Tidy and put things away"] },
+      { id: 6, name: "Deep cleaning", emoji: "🫧", category: "Home", cpe: ["Know cleaning schedule", "Organise supplies & timing", "Clean bathrooms, floors, surfaces"] },
+      { id: 7, name: "Dishes & kitchen", emoji: "🍽️", category: "Home", cpe: ["Notice when kitchen needs attention", "Plan dish rotation", "Wash up & wipe down kitchen"] },
+      { id: 8, name: "Home repairs", emoji: "🔧", category: "Home", cpe: ["Notice & log what's broken", "Research fix or book tradesperson", "Fix it or manage the repair"] },
+      { id: 9, name: "Bills & finances", emoji: "💳", category: "Home", cpe: ["Track bills & due dates", "Review budget & spending", "Pay bills, manage accounts"] },
+      { id: 10, name: "Home admin", emoji: "📄", category: "Home", cpe: ["Know what paperwork is pending", "Organise documents & renewals", "File, submit, renew"] },
+      { id: 11, name: "Morning routine", emoji: "☀️", category: "Kids", cpe: ["Know wake times & schedule", "Prepare clothes/bag night before", "Wake, dress, feed & get out door"] },
+      { id: 12, name: "Bedtime routine", emoji: "🌙", category: "Kids", cpe: ["Know bedtime needs & schedule", "Set up bath/books/routine", "Bath, stories, settle to sleep"] },
+      { id: 13, name: "Feeding (day)", emoji: "🥣", category: "Kids", cpe: ["Know dietary needs & schedule", "Prep ingredients & snacks", "Prepare & serve all meals/snacks"] },
+      { id: 14, name: "Childcare logistics", emoji: "🏡", category: "Kids", cpe: ["Track childcare schedule & gaps", "Book, communicate with carers", "Drop-off, pick-up, payment"] },
+      { id: 15, name: "Doctor & health", emoji: "🩺", category: "Kids", cpe: ["Track health needs & checkups", "Book appointments", "Attend & follow up on care"] },
+      { id: 16, name: "Playdates", emoji: "👶", category: "Kids", cpe: ["Notice social needs", "Plan & coordinate with other families", "Host or transport to playdate"] },
+      { id: 17, name: "Activities & classes", emoji: "🎨", category: "Kids", cpe: ["Research suitable activities", "Book, manage schedule & fees", "Transport & attend with child"] },
+      { id: 18, name: "Emotional support", emoji: "🫶", category: "Kids", cpe: ["Notice child's emotional state", "Think through how to respond", "Be present & support child"] },
+      { id: 19, name: "Toys & supplies", emoji: "🧸", category: "Kids", cpe: ["Track what's needed/outgrown", "Research & order", "Buy, organise & maintain"] },
+      { id: 20, name: "Sleep support", emoji: "😴", category: "Kids", cpe: ["Know sleep patterns & needs", "Plan sleep approach", "Handle night waking & settling"] },
+      { id: 21, name: "Social planning", emoji: "🗓️", category: "Out", cpe: ["Track social obligations & desires", "Plan dates, events, visits", "Book, confirm & manage attendance"] },
+      { id: 22, name: "Gifts & cards", emoji: "🎁", category: "Out", cpe: ["Track birthdays & events", "Choose thoughtful gifts", "Buy, wrap & send on time"] },
+      { id: 23, name: "Travel planning", emoji: "✈️", category: "Out", cpe: ["Know upcoming travel needs", "Research & book transport/stays", "Manage packing & logistics"] },
+      { id: 24, name: "Family visits", emoji: "👨‍👩‍👧", category: "Out", cpe: ["Track when family is due/wants visit", "Plan visit timing & arrangements", "Host or travel & manage visit"] },
+      { id: 25, name: "Date nights", emoji: "💑", category: "Out", cpe: ["Prioritise couple time", "Plan date & book babysitter", "Execute the plan"] },
+      { id: 26, name: "Exercise & movement", emoji: "🏃", category: "Wellbeing", cpe: ["Prioritise physical health", "Schedule workouts", "Show up & do the work"] },
+      { id: 27, name: "Mental health check-ins", emoji: "🧠", category: "Wellbeing", cpe: ["Notice emotional load levels", "Plan check-in conversations", "Have honest conversation together"] },
+      { id: 28, name: "Unicorn Space", emoji: "🦄", category: "Wellbeing", cpe: ["Know what brings you alive", "Protect time for it", "Actually do it — no guilt"] },
+      { id: 29, name: "Self-care", emoji: "🛁", category: "Wellbeing", cpe: ["Notice personal depletion", "Plan rest & recovery time", "Take the time you need"] },
+      { id: 30, name: "Couple check-in", emoji: "💬", category: "Wellbeing", cpe: ["Notice relationship needs", "Schedule a check-in", "Talk honestly about the system"] },
+    ];
+    const CATEGORIES = ["All", ...new Set(CARDS.map(c => c.category))];
 
-function setSyncStatus(s) {
-  const dot = document.getElementById('sync-dot');
-  const lbl = document.getElementById('sync-label');
-  if(!dot) return;
-  dot.className = 'sync-dot ' + (s==='live'?'live':s==='syncing'?'syncing':'');
-  lbl.textContent = s==='live'?'live':s==='syncing'?'saving…':'offline';
-}
+    let me = null, p1name = '', p2name = '';
+    let sharedData = { p1: '', p2: '', cards: {}, activity: [] };
+    let lastHash = '';
+    let activeFilter = 'All';
+    let editingCard = null, pendingOwner = null;
 
-// ── INIT ──
-async function init() {
-  try {
-    const data = await apiGet();
-    sharedData = data;
-    lastHash = JSON.stringify(data);
-    // Check localStorage for identity
-    const saved = localStorage.getItem('fp-identity');
-    if (saved) {
-      const id = JSON.parse(saved);
-      me = id.me; p1name = data.p1||id.p1; p2name = data.p2||id.p2;
-      if (p1name && p2name && me) { hideLoader(); bootApp(); return; }
+    // ── API ──
+    async function apiGet() {
+      const r = await fetch('/api/data'); return r.json();
     }
-    if (data.p1 && data.p2) {
-      p1name = data.p1; p2name = data.p2;
-      hideLoader(); show('setup');
+    async function apiSet(data) {
+      await fetch('/api/data', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+    }
+
+    function setSyncStatus(s) {
+      const dot = document.getElementById('sync-dot');
+      const lbl = document.getElementById('sync-label');
+      if (!dot) return;
+      dot.className = 'sync-dot ' + (s === 'live' ? 'live' : s === 'syncing' ? 'syncing' : '');
+      lbl.textContent = s === 'live' ? 'live' : s === 'syncing' ? 'saving…' : 'offline';
+    }
+
+    // ── INIT ──
+    async function init() {
+      try {
+        const data = await apiGet();
+        sharedData = data;
+        lastHash = JSON.stringify(data);
+        // Check localStorage for identity
+        const saved = localStorage.getItem('fp-identity');
+        if (saved) {
+          const id = JSON.parse(saved);
+          me = id.me; p1name = data.p1 || id.p1; p2name = data.p2 || id.p2;
+          if (p1name && p2name && me) { hideLoader(); bootApp(); return; }
+        }
+        if (data.p1 && data.p2) {
+          p1name = data.p1; p2name = data.p2;
+          hideLoader(); show('setup');
+          document.getElementById('step-1').classList.remove('active');
+          document.getElementById('step-2').classList.add('active');
+          document.getElementById('dot-2').classList.add('done');
+          buildIdentityPick();
+          return;
+        }
+      } catch (e) { console.log('No server data yet'); }
+      hideLoader(); show('welcome');
+    }
+
+    function hideLoader() {
+      const ol = document.getElementById('loading-overlay');
+      ol.classList.add('fade');
+      setTimeout(() => ol.style.display = 'none', 400);
+    }
+
+    function goToSetup() { show('setup'); }
+
+    async function setupStep2() {
+      const p1 = document.getElementById('p1name').value.trim();
+      const p2 = document.getElementById('p2name').value.trim();
+      if (!p1 || !p2) { showToast("Please enter both names"); return; }
+      p1name = p1; p2name = p2;
+      sharedData.p1 = p1; sharedData.p2 = p2;
+      if (!sharedData.cards) sharedData.cards = {};
+      if (!sharedData.activity) sharedData.activity = [];
+      await apiSet(sharedData);
       document.getElementById('step-1').classList.remove('active');
       document.getElementById('step-2').classList.add('active');
       document.getElementById('dot-2').classList.add('done');
       buildIdentityPick();
-      return;
     }
-  } catch(e) { console.log('No server data yet'); }
-  hideLoader(); show('welcome');
-}
 
-function hideLoader() {
-  const ol = document.getElementById('loading-overlay');
-  ol.classList.add('fade');
-  setTimeout(()=>ol.style.display='none', 400);
-}
 
-function goToSetup() { show('setup'); }
+    async function resetApp() {
+      const password = prompt('Enter reset password to wipe all data:');
+      if (!password) return;
 
-async function setupStep2() {
-  const p1 = document.getElementById('p1name').value.trim();
-  const p2 = document.getElementById('p2name').value.trim();
-  if(!p1||!p2){showToast("Please enter both names");return;}
-  p1name=p1; p2name=p2;
-  sharedData.p1=p1; sharedData.p2=p2;
-  if(!sharedData.cards) sharedData.cards={};
-  if(!sharedData.activity) sharedData.activity=[];
-  await apiSet(sharedData);
-  document.getElementById('step-1').classList.remove('active');
-  document.getElementById('step-2').classList.add('active');
-  document.getElementById('dot-2').classList.add('done');
-  buildIdentityPick();
-}
+      const confirmed = confirm('This will permanently delete all card assignments and activity. Are you sure?');
+      if (!confirmed) return;
 
-function buildIdentityPick() {
-  document.getElementById('identity-pick').innerHTML = [
-    {key:'p1',name:p1name,color:'var(--p1-color)',bg:'#FDF3EE'},
-    {key:'p2',name:p2name,color:'var(--p2-color)',bg:'#F0F3F8'},
-  ].map(p=>`<button class="identity-btn" onclick="pickIdentity('${p.key}')" style="background:${p.bg}">
+      try {
+        const res = await fetch('/api/reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          alert('✅ Data reset. Reloading...');
+          window.location.reload();
+        } else {
+          alert('❌ Wrong password.');
+        }
+      } catch (e) {
+        alert('Error connecting to server.');
+      }
+    }
+
+    function buildIdentityPick() {
+      document.getElementById('identity-pick').innerHTML = [
+        { key: 'p1', name: p1name, color: 'var(--p1-color)', bg: '#FDF3EE' },
+        { key: 'p2', name: p2name, color: 'var(--p2-color)', bg: '#F0F3F8' },
+      ].map(p => `<button class="identity-btn" onclick="pickIdentity('${p.key}')" style="background:${p.bg}">
     <div class="identity-dot" style="background:${p.color}"></div>
     <span class="identity-name" style="color:${p.color}">${p.name}</span>
     <span style="margin-left:auto;font-size:.8rem;color:var(--mid-gray)">That's me →</span>
   </button>`).join('');
-}
+    }
 
-function pickIdentity(who) {
-  me = who;
-  localStorage.setItem('fp-identity', JSON.stringify({me, p1:p1name, p2:p2name}));
-  document.getElementById('step-2').classList.remove('active');
-  document.getElementById('step-3').classList.add('active');
-  document.getElementById('dot-3').classList.add('done');
-}
+    function pickIdentity(who) {
+      me = who;
+      localStorage.setItem('fp-identity', JSON.stringify({ me, p1: p1name, p2: p2name }));
+      document.getElementById('step-2').classList.remove('active');
+      document.getElementById('step-3').classList.add('active');
+      document.getElementById('dot-3').classList.add('done');
+    }
 
-function launchApp() { bootApp(); }
+    function launchApp() { bootApp(); }
 
-function bootApp() {
-  document.getElementById('header-p1').textContent = p1name;
-  document.getElementById('header-p2').textContent = p2name;
-  updateAssignBtns();
-  renderFilters(); renderCards(); renderActivityBar();
-  show('app'); startSync();
-}
+    function bootApp() {
+      document.getElementById('header-p1').textContent = p1name;
+      document.getElementById('header-p2').textContent = p2name;
+      updateAssignBtns();
+      renderFilters(); renderCards(); renderActivityBar();
+      show('app'); startSync();
+    }
 
-function updateAssignBtns() {
-  const b1=document.getElementById('assign-p1-btn');
-  const b2=document.getElementById('assign-p2-btn');
-  if(b1) b1.textContent = p1name+(me==='p1'?' (you)':'');
-  if(b2) b2.textContent = p2name+(me==='p2'?' (you)':'');
-}
+    function updateAssignBtns() {
+      const b1 = document.getElementById('assign-p1-btn');
+      const b2 = document.getElementById('assign-p2-btn');
+      if (b1) b1.textContent = p1name + (me === 'p1' ? ' (you)' : '');
+      if (b2) b2.textContent = p2name + (me === 'p2' ? ' (you)' : '');
+    }
 
-// ── SYNC ──
-function startSync() {
-  setSyncStatus('live');
-  setInterval(async()=>{
-    try {
-      const fresh = await apiGet();
-      const h = JSON.stringify(fresh);
-      if(h!==lastHash){ lastHash=h; sharedData=fresh; renderCards(); renderActivityBar();
-        const at=document.querySelector('.tab-content.active');
-        if(at&&at.id==='tab-tracker') renderTracker();
-        if(at&&at.id==='tab-rebalance') renderRebalance();
-      }
-    } catch(e){}
-  }, 4000);
-}
+    // ── SYNC ──
+    function startSync() {
+      setSyncStatus('live');
+      setInterval(async () => {
+        try {
+          const fresh = await apiGet();
+          const h = JSON.stringify(fresh);
+          if (h !== lastHash) {
+            lastHash = h; sharedData = fresh; renderCards(); renderActivityBar();
+            const at = document.querySelector('.tab-content.active');
+            if (at && at.id === 'tab-tracker') renderTracker();
+            if (at && at.id === 'tab-rebalance') renderRebalance();
+          }
+        } catch (e) { }
+      }, 4000);
+    }
 
-// ── ACTIVITY ──
-function addActivity(action, cardName) {
-  const who = me==='p1'?p1name:p2name;
-  if(!sharedData.activity) sharedData.activity=[];
-  sharedData.activity.unshift({who,action,card:cardName,time:Date.now()});
-  sharedData.activity = sharedData.activity.slice(0,10);
-}
+    // ── ACTIVITY ──
+    function addActivity(action, cardName) {
+      const who = me === 'p1' ? p1name : p2name;
+      if (!sharedData.activity) sharedData.activity = [];
+      sharedData.activity.unshift({ who, action, card: cardName, time: Date.now() });
+      sharedData.activity = sharedData.activity.slice(0, 10);
+    }
 
-function renderActivityBar() {
-  const bar=document.getElementById('activity-bar');
-  const acts=(sharedData.activity||[]).slice(0,3);
-  if(!acts.length) return;
-  bar.innerHTML=acts.map((a,i)=>{
-    const col=a.who===p1name?'var(--p1-color)':'var(--p2-color)';
-    return `<div class="act-item" style="opacity:${1-i*.3}">
+    function renderActivityBar() {
+      const bar = document.getElementById('activity-bar');
+      const acts = (sharedData.activity || []).slice(0, 3);
+      if (!acts.length) return;
+      bar.innerHTML = acts.map((a, i) => {
+        const col = a.who === p1name ? 'var(--p1-color)' : 'var(--p2-color)';
+        return `<div class="act-item" style="opacity:${1 - i * .3}">
       <span class="act-who" style="color:${col}">${a.who}</span>
       <span>${a.action}</span> <strong>${a.card}</strong>
       <span style="color:var(--light-gray)">· ${timeAgo(a.time)}</span>
-      ${i<acts.length-1?'<span style="color:var(--light-gray);margin:0 .25rem">·</span>':''}
+      ${i < acts.length - 1 ? '<span style="color:var(--light-gray);margin:0 .25rem">·</span>' : ''}
     </div>`;
-  }).join('');
-}
-
-function timeAgo(ts) {
-  const s=Math.floor((Date.now()-ts)/1000);
-  if(s<60) return 'just now'; if(s<3600) return Math.floor(s/60)+'m ago';
-  return Math.floor(s/3600)+'h ago';
-}
-
-// ── RENDER ──
-function renderFilters() {
-  document.getElementById('filter-row').innerHTML=CATEGORIES.map(c=>
-    `<button class="filter-chip ${c==='All'?'active':''}" onclick="setFilter('${c}',this)">${c}</button>`
-  ).join('');
-}
-
-function setFilter(cat,el) {
-  activeFilter=cat;
-  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active'); renderCards();
-}
-
-function renderCards() {
-  const filtered=activeFilter==='All'?CARDS:CARDS.filter(c=>c.category===activeFilter);
-  const asgn=filtered.filter(c=>sharedData.cards[c.id]).length;
-  const dc=document.getElementById('deal-count');
-  if(dc) dc.textContent=`${asgn}/${filtered.length} assigned`;
-  const grid=document.getElementById('cards-grid');
-  if(!grid) return;
-  grid.innerHTML=filtered.map(card=>{
-    const d=sharedData.cards[card.id];
-    let cls='',badge='';
-    if(d){cls='assigned-'+d.owner;
-      const init=d.owner==='p1'?p1name[0]:p2name[0];
-      const col=d.owner==='p1'?'var(--p1-color)':'var(--p2-color)';
-      badge=`<div class="card-owner-badge" style="background:${col}">${init}</div>`;
+      }).join('');
     }
-    return `<div class="card-item ${cls}" onclick="openCard(${card.id})">${badge}
+
+    function timeAgo(ts) {
+      const s = Math.floor((Date.now() - ts) / 1000);
+      if (s < 60) return 'just now'; if (s < 3600) return Math.floor(s / 60) + 'm ago';
+      return Math.floor(s / 3600) + 'h ago';
+    }
+
+    // ── RENDER ──
+    function renderFilters() {
+      document.getElementById('filter-row').innerHTML = CATEGORIES.map(c =>
+        `<button class="filter-chip ${c === 'All' ? 'active' : ''}" onclick="setFilter('${c}',this)">${c}</button>`
+      ).join('');
+    }
+
+    function setFilter(cat, el) {
+      activeFilter = cat;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active'); renderCards();
+    }
+
+    function renderCards() {
+      const filtered = activeFilter === 'All' ? CARDS : CARDS.filter(c => c.category === activeFilter);
+      const asgn = filtered.filter(c => sharedData.cards[c.id]).length;
+      const dc = document.getElementById('deal-count');
+      if (dc) dc.textContent = `${asgn}/${filtered.length} assigned`;
+      const grid = document.getElementById('cards-grid');
+      if (!grid) return;
+      grid.innerHTML = filtered.map(card => {
+        const d = sharedData.cards[card.id];
+        let cls = '', badge = '';
+        if (d) {
+          cls = 'assigned-' + d.owner;
+          const init = d.owner === 'p1' ? p1name[0] : p2name[0];
+          const col = d.owner === 'p1' ? 'var(--p1-color)' : 'var(--p2-color)';
+          badge = `<div class="card-owner-badge" style="background:${col}">${init}</div>`;
+        }
+        return `<div class="card-item ${cls}" onclick="openCard(${card.id})">${badge}
       <div class="card-emoji">${card.emoji}</div>
       <div class="card-name">${card.name}</div>
       <div class="card-category">${card.category}</div>
     </div>`;
-  }).join('');
-}
+      }).join('');
+    }
 
-function openCard(id) {
-  const card=CARDS.find(c=>c.id===id);
-  editingCard=id;
-  const d=sharedData.cards[id]||{};
-  pendingOwner=d.owner||null;
-  document.getElementById('modal-emoji').textContent=card.emoji;
-  document.getElementById('modal-title').textContent=card.name;
-  document.getElementById('modal-category').textContent=card.category;
-  document.getElementById('modal-standard').value=d.standard||'';
-  document.getElementById('modal-cpe').innerHTML=card.cpe.map((item,i)=>
-    `<div class="cpe-item"><div class="cpe-letter">${['C','P','E'][i]}</div><div>${item}</div></div>`
-  ).join('');
-  updateAssignBtns();
-  document.getElementById('assign-p1-btn').classList.toggle('active',d.owner==='p1');
-  document.getElementById('assign-p2-btn').classList.toggle('active',d.owner==='p2');
-  document.getElementById('unassign-btn').style.display=d.owner?'block':'none';
-  document.getElementById('modal-overlay').classList.add('open');
-}
+    function openCard(id) {
+      const card = CARDS.find(c => c.id === id);
+      editingCard = id;
+      const d = sharedData.cards[id] || {};
+      pendingOwner = d.owner || null;
+      document.getElementById('modal-emoji').textContent = card.emoji;
+      document.getElementById('modal-title').textContent = card.name;
+      document.getElementById('modal-category').textContent = card.category;
+      document.getElementById('modal-standard').value = d.standard || '';
+      document.getElementById('modal-cpe').innerHTML = card.cpe.map((item, i) =>
+        `<div class="cpe-item"><div class="cpe-letter">${['C', 'P', 'E'][i]}</div><div>${item}</div></div>`
+      ).join('');
+      updateAssignBtns();
+      document.getElementById('assign-p1-btn').classList.toggle('active', d.owner === 'p1');
+      document.getElementById('assign-p2-btn').classList.toggle('active', d.owner === 'p2');
+      document.getElementById('unassign-btn').style.display = d.owner ? 'block' : 'none';
+      document.getElementById('modal-overlay').classList.add('open');
+    }
 
-function setAssignee(who) {
-  pendingOwner=pendingOwner===who?null:who;
-  document.getElementById('assign-p1-btn').classList.toggle('active',pendingOwner==='p1');
-  document.getElementById('assign-p2-btn').classList.toggle('active',pendingOwner==='p2');
-}
+    function setAssignee(who) {
+      pendingOwner = pendingOwner === who ? null : who;
+      document.getElementById('assign-p1-btn').classList.toggle('active', pendingOwner === 'p1');
+      document.getElementById('assign-p2-btn').classList.toggle('active', pendingOwner === 'p2');
+    }
 
-async function saveCard() {
-  const id=editingCard;
-  const card=CARDS.find(c=>c.id===id);
-  const standard=document.getElementById('modal-standard').value.trim();
-  const prev=sharedData.cards[id];
-  if(pendingOwner){
-    sharedData.cards[id]={owner:pendingOwner,standard,changedBy:me==='p1'?p1name:p2name,changedAt:Date.now()};
-    const ownerName=pendingOwner==='p1'?p1name:p2name;
-    addActivity(prev?(prev.owner!==pendingOwner?`assigned to ${ownerName} →`:'updated'):'dealt',card.name);
-  } else if(prev){delete sharedData.cards[id];addActivity('removed',card.name);}
-  closeModal();
-  setSyncStatus('syncing');
-  await apiSet(sharedData);
-  lastHash=JSON.stringify(sharedData);
-  setSyncStatus('live');
-  renderCards(); renderActivityBar();
-  showToast(pendingOwner?"Card saved ✓":"Card unassigned");
-}
+    async function saveCard() {
+      const id = editingCard;
+      const card = CARDS.find(c => c.id === id);
+      const standard = document.getElementById('modal-standard').value.trim();
+      const prev = sharedData.cards[id];
+      if (pendingOwner) {
+        sharedData.cards[id] = { owner: pendingOwner, standard, changedBy: me === 'p1' ? p1name : p2name, changedAt: Date.now() };
+        const ownerName = pendingOwner === 'p1' ? p1name : p2name;
+        addActivity(prev ? (prev.owner !== pendingOwner ? `assigned to ${ownerName} →` : 'updated') : 'dealt', card.name);
+      } else if (prev) { delete sharedData.cards[id]; addActivity('removed', card.name); }
+      closeModal();
+      setSyncStatus('syncing');
+      await apiSet(sharedData);
+      lastHash = JSON.stringify(sharedData);
+      setSyncStatus('live');
+      renderCards(); renderActivityBar();
+      showToast(pendingOwner ? "Card saved ✓" : "Card unassigned");
+    }
 
-async function unassignCard() {
-  const id=editingCard;
-  const card=CARDS.find(c=>c.id===id);
-  delete sharedData.cards[id];
-  addActivity('removed',card.name);
-  closeModal();
-  await apiSet(sharedData);
-  lastHash=JSON.stringify(sharedData);
-  renderCards(); renderActivityBar();
-  showToast("Card unassigned");
-}
+    async function unassignCard() {
+      const id = editingCard;
+      const card = CARDS.find(c => c.id === id);
+      delete sharedData.cards[id];
+      addActivity('removed', card.name);
+      closeModal();
+      await apiSet(sharedData);
+      lastHash = JSON.stringify(sharedData);
+      renderCards(); renderActivityBar();
+      showToast("Card unassigned");
+    }
 
-function closeModal(){document.getElementById('modal-overlay').classList.remove('open');editingCard=null;}
-function closeModalOutside(e){if(e.target===document.getElementById('modal-overlay'))closeModal();}
+    function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); editingCard = null; }
+    function closeModalOutside(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
 
-function renderTracker() {
-  const assigned=Object.entries(sharedData.cards||{});
-  const p1c=assigned.filter(([,d])=>d.owner==='p1');
-  const p2c=assigned.filter(([,d])=>d.owner==='p2');
-  const total=assigned.length||1;
-  document.getElementById('tracker-summary').innerHTML=`
+    function renderTracker() {
+      const assigned = Object.entries(sharedData.cards || {});
+      const p1c = assigned.filter(([, d]) => d.owner === 'p1');
+      const p2c = assigned.filter(([, d]) => d.owner === 'p2');
+      const total = assigned.length || 1;
+      document.getElementById('tracker-summary').innerHTML = `
     <div class="summary-card"><div class="summary-player" style="color:var(--p1-color)">${p1name}</div><div class="summary-count" style="color:var(--p1-color)">${p1c.length}</div><div class="summary-label">cards owned</div></div>
     <div class="summary-card"><div class="summary-player" style="color:var(--p2-color)">${p2name}</div><div class="summary-count" style="color:var(--p2-color)">${p2c.length}</div><div class="summary-label">cards owned</div></div>`;
-  const pct=Math.round((p1c.length/total)*100);
-  document.getElementById('balance-fill').style.width=pct+'%';
-  document.getElementById('balance-p1-label').textContent=p1name+' '+pct+'%';
-  document.getElementById('balance-p2-label').textContent=(100-pct)+'% '+p2name;
-  if(!assigned.length){document.getElementById('tracker-list').innerHTML=`<div class="empty-state"><div class="empty-state-icon">🃏</div><p>No cards dealt yet.</p></div>`;return;}
-  document.getElementById('tracker-list').innerHTML=assigned.map(([id,d])=>{
-    const card=CARDS.find(c=>c.id===+id);if(!card)return'';
-    const name=d.owner==='p1'?p1name:p2name;
-    const col=d.owner==='p1'?'var(--p1-color)':'var(--p2-color)';
-    return `<div class="tracker-item">
+      const pct = Math.round((p1c.length / total) * 100);
+      document.getElementById('balance-fill').style.width = pct + '%';
+      document.getElementById('balance-p1-label').textContent = p1name + ' ' + pct + '%';
+      document.getElementById('balance-p2-label').textContent = (100 - pct) + '% ' + p2name;
+      if (!assigned.length) { document.getElementById('tracker-list').innerHTML = `<div class="empty-state"><div class="empty-state-icon">🃏</div><p>No cards dealt yet.</p></div>`; return; }
+      document.getElementById('tracker-list').innerHTML = assigned.map(([id, d]) => {
+        const card = CARDS.find(c => c.id === +id); if (!card) return '';
+        const name = d.owner === 'p1' ? p1name : p2name;
+        const col = d.owner === 'p1' ? 'var(--p1-color)' : 'var(--p2-color)';
+        return `<div class="tracker-item">
       <div class="tracker-emoji">${card.emoji}</div>
       <div class="tracker-info"><div class="tracker-name">${card.name}</div><div class="tracker-cat">${card.category}</div>
-      ${d.standard?`<div class="tracker-standard">"${d.standard}"</div>`:''}
-      ${d.changedBy?`<div class="tracker-changed-by">Last updated by ${d.changedBy} · ${timeAgo(d.changedAt)}</div>`:''}
+      ${d.standard ? `<div class="tracker-standard">"${d.standard}"</div>` : ''}
+      ${d.changedBy ? `<div class="tracker-changed-by">Last updated by ${d.changedBy} · ${timeAgo(d.changedAt)}</div>` : ''}
       </div><div class="tracker-owner" style="background:${col}">${name[0]}</div>
     </div>`;
-  }).join('');
-}
+      }).join('');
+    }
 
-function renderRebalance() {
-  const assigned=Object.entries(sharedData.cards||{});
-  if(!assigned.length){document.getElementById('rebalance-grid').innerHTML=`<div class="empty-state"><div class="empty-state-icon">⚖️</div><p>No cards dealt yet.</p></div>`;return;}
-  document.getElementById('rebalance-grid').innerHTML=assigned.map(([id,d])=>{
-    const card=CARDS.find(c=>c.id===+id);if(!card)return'';
-    const name=d.owner==='p1'?p1name:p2name;
-    const other=d.owner==='p1'?p2name:p1name;
-    const col=d.owner==='p1'?'var(--p1-color)':'var(--p2-color)';
-    return `<div class="rebalance-item">
+    function renderRebalance() {
+      const assigned = Object.entries(sharedData.cards || {});
+      if (!assigned.length) { document.getElementById('rebalance-grid').innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚖️</div><p>No cards dealt yet.</p></div>`; return; }
+      document.getElementById('rebalance-grid').innerHTML = assigned.map(([id, d]) => {
+        const card = CARDS.find(c => c.id === +id); if (!card) return '';
+        const name = d.owner === 'p1' ? p1name : p2name;
+        const other = d.owner === 'p1' ? p2name : p1name;
+        const col = d.owner === 'p1' ? 'var(--p1-color)' : 'var(--p2-color)';
+        return `<div class="rebalance-item">
       <div class="rebalance-emoji">${card.emoji}</div>
       <div class="rebalance-info"><div class="rebalance-name">${card.name}</div><div class="rebalance-assigned" style="color:${col}">→ ${name}</div></div>
       <button class="swap-btn" onclick="swapCard(${id})">Give to ${other}</button>
     </div>`;
-  }).join('');
-}
+      }).join('');
+    }
 
-async function swapCard(id) {
-  if(!sharedData.cards[id])return;
-  const card=CARDS.find(c=>c.id===+id);
-  const prev=sharedData.cards[id].owner;
-  sharedData.cards[id].owner=prev==='p1'?'p2':'p1';
-  sharedData.cards[id].changedBy=me==='p1'?p1name:p2name;
-  sharedData.cards[id].changedAt=Date.now();
-  const newOwner=sharedData.cards[id].owner==='p1'?p1name:p2name;
-  addActivity(`swapped to ${newOwner}`,card.name);
-  await apiSet(sharedData);
-  lastHash=JSON.stringify(sharedData);
-  renderRebalance(); renderCards(); renderActivityBar();
-  showToast("Card swapped ✓");
-}
+    async function swapCard(id) {
+      if (!sharedData.cards[id]) return;
+      const card = CARDS.find(c => c.id === +id);
+      const prev = sharedData.cards[id].owner;
+      sharedData.cards[id].owner = prev === 'p1' ? 'p2' : 'p1';
+      sharedData.cards[id].changedBy = me === 'p1' ? p1name : p2name;
+      sharedData.cards[id].changedAt = Date.now();
+      const newOwner = sharedData.cards[id].owner === 'p1' ? p1name : p2name;
+      addActivity(`swapped to ${newOwner}`, card.name);
+      await apiSet(sharedData);
+      lastHash = JSON.stringify(sharedData);
+      renderRebalance(); renderCards(); renderActivityBar();
+      showToast("Card swapped ✓");
+    }
 
-function switchTab(name,el) {
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active'); el.classList.add('active');
-  if(name==='tracker') renderTracker();
-  if(name==='rebalance') renderRebalance();
-}
+    function switchTab(name, el) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active'); el.classList.add('active');
+      if (name === 'tracker') renderTracker();
+      if (name === 'rebalance') renderRebalance();
+    }
 
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+    function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
 
-init();
-</script>
+    init();
+  </script>
 </body>
+
 </html>
