@@ -103,6 +103,10 @@ const server = http.createServer((req, res) => {
     serveFile(res, path.join(__dirname, 'public', 'index.html'), 'text/html');
     return;
   }
+  if (pathname === '/app-icon.png') {
+    serveFile(res, path.join(__dirname, 'public', 'app-icon.png'), 'image/png');
+    return;
+  }
 
   res.writeHead(404); res.end('Not found');
 });
