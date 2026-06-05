@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Fair Play</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
@@ -28,6 +28,9 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html, body {
+      touch-action: pan-x pan-y;
+    }
     body {
       font-family: 'DM Sans', sans-serif;
       background: var(--cream);
@@ -35,6 +38,17 @@
       min-height: 100vh;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    /* Re-enable selection inside actual text inputs, and keep ≥16px so iOS Safari
+       doesn't auto-zoom on focus */
+    input, textarea, select {
+      font-size: 16px;
+      user-select: text;
+      -webkit-user-select: text;
     }
 
     .screen { display: none; min-height: 100vh; }
@@ -154,7 +168,7 @@
     .player-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
     .player-input-group input {
       flex: 1; border: 1.5px solid var(--sand); border-radius: 12px;
-      padding: .85rem 1rem; font-family: 'DM Sans', sans-serif; font-size: 1rem;
+      padding: .85rem 1rem; font-family: 'DM Sans', sans-serif; font-size: 16px;
       outline: none; transition: border-color .2s; background: var(--cream);
     }
     .player-input-group input:focus { border-color: var(--terracotta); }
@@ -276,7 +290,10 @@
       background: white; border-radius: 16px; padding: 1rem;
       cursor: pointer; border: 2px solid transparent; transition: all .2s;
       box-shadow: 0 2px 8px rgba(44,44,44,.06);
-      position: relative; user-select: none;
+      position: relative;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
     }
     .card-item:active { transform: scale(.97); }
     .card-item.assigned-p1 { border-color: var(--p1-color); background: #FDF8F5; }
@@ -393,14 +410,20 @@
 
     /* ── BOTTOM SHEET ── */
     .sheet-overlay {
-      display: none;
+      display: block;
       position: fixed; inset: 0;
       background: rgba(44,44,44,.45);
       z-index: 200;
       backdrop-filter: blur(3px);
       -webkit-backdrop-filter: blur(3px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .28s ease, visibility .28s;
     }
-    .sheet-overlay.open { display: block; }
+    .sheet-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
 
     .sheet {
       position: fixed;
@@ -408,8 +431,10 @@
       background: white;
       border-radius: 20px 20px 0 0;
       padding: 0 1.5rem calc(1.5rem + var(--safe-bottom));
-      max-height: 92vh;
+      max-height: 88vh; /* fallback */
+      max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 1rem);
       overflow-y: auto;
+      overscroll-behavior: contain;
       -webkit-overflow-scrolling: touch;
       z-index: 201;
       transform: translateY(100%);
@@ -418,9 +443,24 @@
     .sheet.open { transform: translateY(0); }
 
     .sheet-handle {
-      width: 36px; height: 4px; border-radius: 2px;
-      background: var(--sand); margin: .75rem auto 1.5rem;
+      width: 80px; height: 28px;
+      margin: .25rem auto 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      touch-action: none;
     }
+    .sheet-handle::after {
+      content: '';
+      display: block;
+      width: 40px; height: 4px;
+      border-radius: 2px;
+      background: var(--sand);
+      transition: background .2s, width .15s;
+    }
+    .sheet-handle:active { cursor: grabbing; }
+    .sheet-handle:active::after { background: var(--mid-gray); width: 48px; }
 
     .sheet-emoji { font-size: 2.5rem; margin-bottom: .5rem; }
     .sheet-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: .2rem; }
@@ -435,7 +475,7 @@
 
     .standard-textarea {
       width: 100%; border: 1.5px solid var(--sand); border-radius: 12px;
-      padding: .85rem; font-family: 'DM Sans', sans-serif; font-size: .9rem;
+      padding: .85rem; font-family: 'DM Sans', sans-serif; font-size: 16px;
       resize: none; min-height: 80px; outline: none;
       transition: border-color .2s; background: var(--cream);
       line-height: 1.5; color: var(--charcoal);
@@ -487,7 +527,7 @@
     }
     .add-sheet-input {
       width: 100%; border: 1.5px solid var(--sand); border-radius: 12px;
-      padding: .8rem .9rem; font-family: 'DM Sans', sans-serif; font-size: .95rem;
+      padding: .8rem .9rem; font-family: 'DM Sans', sans-serif; font-size: 16px;
       outline: none; background: var(--cream); color: var(--charcoal);
       transition: border-color .2s;
     }
@@ -569,12 +609,18 @@
     .card-remove-btn:hover { transform: scale(1.12); }
     .card-remove-btn:active { transform: scale(.92); }
     @media (hover: none) {
-      .card-remove-btn { opacity: 1; }
+      .card-remove-btn { display: none; }
+    }
+    .card-item.long-pressing {
+      transform: scale(.95);
+      background: var(--cream);
+      box-shadow: 0 1px 4px rgba(44,44,44,.04);
+      transition: transform .2s ease-out, background .2s ease-out;
     }
 
     /* ── CONFIRM MODAL ── */
     .confirm-overlay {
-      display: none;
+      display: flex;
       position: fixed; inset: 0;
       background: rgba(44,44,44,.55);
       z-index: 300;
@@ -583,8 +629,14 @@
       align-items: center;
       justify-content: center;
       padding: 1.5rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .2s ease, visibility .2s;
     }
-    .confirm-overlay.open { display: flex; }
+    .confirm-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
     .confirm-modal {
       background: white;
       border-radius: 20px;
@@ -593,6 +645,16 @@
       width: 100%;
       box-shadow: var(--shadow-lg);
       text-align: center;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      transform: scale(.92) translateY(8px);
+      opacity: 0;
+      transition: transform .28s cubic-bezier(.34, 1.4, .64, 1), opacity .2s ease;
+    }
+    .confirm-overlay.open .confirm-modal {
+      transform: scale(1) translateY(0);
+      opacity: 1;
     }
     .confirm-title {
       font-family: 'Playfair Display', serif;
@@ -804,9 +866,9 @@
       }
       .fab:hover { box-shadow: 0 6px 20px rgba(196,113,74,.55); }
 
-      /* Card grid gets a tighter min-width that scales nicely up */
+      /* Card grid: fixed 5 columns on desktop */
       .cards-grid {
-        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        grid-template-columns: repeat(5, 1fr);
         gap: 1rem;
       }
 
@@ -1138,7 +1200,7 @@
   </div>
 
   <!-- CONFIRM MODAL -->
-  <div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-overlay" id="confirm-overlay" onclick="closeConfirmOutside(event)">
     <div class="confirm-modal">
       <h3 class="confirm-title" id="confirm-title">Are you sure?</h3>
       <p class="confirm-body" id="confirm-body"></p>
@@ -1154,10 +1216,30 @@
   <div class="sheet" id="settings-sheet">
     <div class="sheet-handle"></div>
     <h3 class="sheet-title" style="margin-bottom:1.25rem;">Settings</h3>
-    <div class="settings-item">
-      <div>
-        <div class="settings-item-label">Players</div>
-        <div class="settings-players" id="settings-players"></div>
+    <div class="settings-item" style="display:block;">
+      <div id="settings-players-view" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="startRenamePlayers()">
+        <div>
+          <div class="settings-item-label">Players</div>
+          <div class="settings-players" id="settings-players"></div>
+        </div>
+        <span style="color:var(--mid-gray);font-size:.85rem;">Rename ✎</span>
+      </div>
+      <div id="settings-players-edit" style="display:none;">
+        <div class="settings-item-label" style="margin-bottom:.6rem;">Edit player names</div>
+        <div class="player-inputs">
+          <div class="player-input-group">
+            <div class="player-dot" style="background:var(--p1-color)"></div>
+            <input type="text" id="rename-p1" maxlength="20" placeholder="Partner 1 name">
+          </div>
+          <div class="player-input-group">
+            <div class="player-dot" style="background:var(--p2-color)"></div>
+            <input type="text" id="rename-p2" maxlength="20" placeholder="Partner 2 name">
+          </div>
+        </div>
+        <div style="display:flex;gap:.5rem;margin-top:.85rem;">
+          <button class="btn-cancel" onclick="cancelRenamePlayers()" style="flex:1;">Cancel</button>
+          <button class="btn-save" onclick="saveRenamePlayers()" style="flex:1;">Save ✓</button>
+        </div>
       </div>
     </div>
     <div class="settings-item" onclick="closeSettings()" style="color:var(--mid-gray);">
@@ -1349,6 +1431,15 @@
             lastHash = h;
             sharedData = { customCards: [], ...fresh };
             if (!Array.isArray(sharedData.customCards)) sharedData.customCards = [];
+            // Pick up player renames from the other device
+            let nameChanged = false;
+            if (sharedData.p1 && sharedData.p1 !== p1name) { p1name = sharedData.p1; nameChanged = true; }
+            if (sharedData.p2 && sharedData.p2 !== p2name) { p2name = sharedData.p2; nameChanged = true; }
+            if (nameChanged) {
+              if (me) localStorage.setItem('fp-identity', JSON.stringify({ me, p1: p1name, p2: p2name }));
+              updateAssignBtns();
+              if (document.getElementById('settings-overlay').classList.contains('open')) renderSettingsPlayers();
+            }
             renderFilters(); renderCards(); renderActivityLine();
             const at = document.querySelector('.tab-content.active');
             if (at && at.id === 'tab-tracker') renderTracker();
@@ -1439,14 +1530,82 @@
           const col = d.owner === 'p1' ? 'var(--p1-color)' : 'var(--p2-color)';
           badge = `<div class="card-owner-badge" style="background:${col}">${escapeHtml(init)}</div>`;
         }
-        const safeId = jsString(card.id);
-        return `<div class="card-item ${cls}" onclick="openCard('${safeId}')">
-          <button class="card-remove-btn" onclick="event.stopPropagation();askRemoveCard('${safeId}')" aria-label="Remove card">×</button>
+        return `<div class="card-item ${cls}" data-card-id="${escapeAttr(card.id)}">
+          <button class="card-remove-btn" data-card-action="remove" aria-label="Remove card">×</button>
           ${badge}
           <div class="card-emoji">${escapeHtml(card.emoji)}</div>
           <div class="card-name">${escapeHtml(card.name)}</div>
         </div>`;
       }).join('');
+      attachCardGridListeners();
+    }
+
+    // ── CARD GRID INTERACTION (click + long-press) ──
+    function attachCardGridListeners() {
+      const grid = document.getElementById('cards-grid');
+      if (!grid || grid._handlersBound) return;
+      grid._handlersBound = true;
+
+      let pressTimer = null;
+      let longPressFired = false;
+      let pressedEl = null;
+      let startX = 0, startY = 0;
+      const HOLD_MS = 550;
+      const MOVE_TOLERANCE = 10;
+
+      function cancelHold() {
+        if (pressedEl) pressedEl.classList.remove('long-pressing');
+        if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+        pressedEl = null;
+      }
+
+      grid.addEventListener('pointerdown', (e) => {
+        // Desktop mouse users have the visible × button → skip long-press
+        if (e.pointerType === 'mouse') return;
+        if (e.target.closest('.card-remove-btn')) return;
+        const card = e.target.closest('.card-item');
+        if (!card) return;
+        longPressFired = false;
+        pressedEl = card;
+        startX = e.clientX; startY = e.clientY;
+        card.classList.add('long-pressing');
+        pressTimer = setTimeout(() => {
+          longPressFired = true;
+          if (pressedEl) pressedEl.classList.remove('long-pressing');
+          if (navigator.vibrate) navigator.vibrate(18);
+          const id = card.getAttribute('data-card-id');
+          if (id) askRemoveCard(id);
+        }, HOLD_MS);
+      });
+
+      grid.addEventListener('pointermove', (e) => {
+        if (!pressTimer) return;
+        if (Math.abs(e.clientX - startX) > MOVE_TOLERANCE ||
+            Math.abs(e.clientY - startY) > MOVE_TOLERANCE) {
+          cancelHold();
+        }
+      });
+
+      grid.addEventListener('pointerup', cancelHold);
+      grid.addEventListener('pointercancel', cancelHold);
+      grid.addEventListener('pointerleave', cancelHold);
+
+      grid.addEventListener('click', (e) => {
+        const card = e.target.closest('.card-item');
+        if (!card) return;
+        const id = card.getAttribute('data-card-id');
+        if (e.target.closest('.card-remove-btn')) {
+          e.stopPropagation();
+          if (id) askRemoveCard(id);
+          return;
+        }
+        if (longPressFired) {
+          longPressFired = false;
+          e.preventDefault();
+          return;
+        }
+        if (id) openCard(id);
+      });
     }
 
     function openCard(id) {
@@ -1571,6 +1730,9 @@
     function closeConfirm() {
       document.getElementById('confirm-overlay').classList.remove('open');
       confirmCallback = null;
+    }
+    function closeConfirmOutside(e) {
+      if (e.target === document.getElementById('confirm-overlay')) closeConfirm();
     }
     function runConfirm() {
       const cb = confirmCallback;
@@ -1813,21 +1975,64 @@
     }
 
     // ── SETTINGS SHEET ──
-    function openSettings() {
+    function renderSettingsPlayers() {
       const sp = document.getElementById('settings-players');
-      if (sp) {
-        sp.innerHTML = [
-          { name: p1name, color: 'var(--p1-color)', bg: '#FDF3EE', me: me === 'p1' },
-          { name: p2name, color: 'var(--p2-color)', bg: '#F0F3F8', me: me === 'p2' },
-        ].map(p => `<div class="settings-player-chip" style="background:${p.bg}">
-          <div class="settings-player-dot" style="background:${p.color}"></div>
-          <span style="color:${p.color};font-size:.82rem;font-weight:500;">${p.name}${p.me ? ' (you)' : ''}</span>
-        </div>`).join('');
-      }
+      if (!sp) return;
+      sp.innerHTML = [
+        { name: p1name, color: 'var(--p1-color)', bg: '#FDF3EE', me: me === 'p1' },
+        { name: p2name, color: 'var(--p2-color)', bg: '#F0F3F8', me: me === 'p2' },
+      ].map(p => `<div class="settings-player-chip" style="background:${p.bg}">
+        <div class="settings-player-dot" style="background:${p.color}"></div>
+        <span style="color:${p.color};font-size:.82rem;font-weight:500;">${escapeHtml(p.name)}${p.me ? ' (you)' : ''}</span>
+      </div>`).join('');
+    }
+    function openSettings() {
+      renderSettingsPlayers();
+      cancelRenamePlayers();
       openSheet('settings-overlay', 'settings-sheet');
     }
     function closeSettings() { closeSheet('settings-overlay', 'settings-sheet'); }
     function closeSettingsOutside(e) { if (e.target === document.getElementById('settings-overlay')) closeSettings(); }
+
+    function startRenamePlayers() {
+      document.getElementById('rename-p1').value = p1name;
+      document.getElementById('rename-p2').value = p2name;
+      document.getElementById('settings-players-view').style.display = 'none';
+      document.getElementById('settings-players-edit').style.display = 'block';
+      setTimeout(() => document.getElementById('rename-p1').focus(), 50);
+    }
+    function cancelRenamePlayers() {
+      const view = document.getElementById('settings-players-view');
+      const edit = document.getElementById('settings-players-edit');
+      if (edit) edit.style.display = 'none';
+      if (view) view.style.display = 'flex';
+    }
+    async function saveRenamePlayers() {
+      const np1 = document.getElementById('rename-p1').value.trim();
+      const np2 = document.getElementById('rename-p2').value.trim();
+      if (!np1 || !np2) { showToast("Both names are required"); return; }
+      if (np1 === p1name && np2 === p2name) { cancelRenamePlayers(); return; }
+      const oldP1 = p1name, oldP2 = p2name;
+      p1name = np1; p2name = np2;
+      sharedData.p1 = np1; sharedData.p2 = np2;
+      if (me) localStorage.setItem('fp-identity', JSON.stringify({ me, p1: np1, p2: np2 }));
+      const changes = [];
+      if (oldP1 !== np1) changes.push(`${oldP1 || '(blank)'} → ${np1}`);
+      if (oldP2 !== np2) changes.push(`${oldP2 || '(blank)'} → ${np2}`);
+      addActivity('renamed players', changes.join(', '));
+      cancelRenamePlayers();
+      renderSettingsPlayers();
+      updateAssignBtns();
+      setSyncStatus('syncing');
+      await apiSet(sharedData);
+      lastHash = JSON.stringify(sharedData);
+      setSyncStatus('live');
+      renderCards(); renderActivityLine();
+      const at = document.querySelector('.tab-content.active');
+      if (at && at.id === 'tab-tracker') renderTracker();
+      if (at && at.id === 'tab-rebalance') renderRebalance();
+      showToast("Names updated ✓");
+    }
 
     async function confirmReset() {
       closeSettings();
@@ -1967,6 +2172,142 @@
       t.textContent = msg; t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 2200);
     }
+
+    // Block iOS Safari pinch-zoom (it ignores user-scalable=no) and double-tap-zoom
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('gesturechange', e => e.preventDefault());
+    document.addEventListener('gestureend', e => e.preventDefault());
+    let _lastTouchEnd = 0;
+    document.addEventListener('touchend', e => {
+      const now = Date.now();
+      if (now - _lastTouchEnd <= 320) e.preventDefault();
+      _lastTouchEnd = now;
+    }, { passive: false });
+
+    // ── DRAG-TO-DISMISS for bottom sheets (mobile only) ──
+    const SHEET_DISMISS_FNS = {
+      'modal-sheet':       () => closeModal(),
+      'add-card-sheet':    () => closeAddCardModal(),
+      'add-chooser-sheet': () => closeAddChooser(),
+      'library-sheet':     () => closeLibraryPicker(),
+      'settings-sheet':    () => closeSettings(),
+    };
+
+    function initSheetDrag() {
+      document.querySelectorAll('.sheet-handle').forEach(handle => {
+        const sheet = handle.closest('.sheet');
+        if (!sheet) return;
+        let dragging = false;
+        let startY = 0;
+        let currentDelta = 0;
+
+        handle.addEventListener('pointerdown', (e) => {
+          // Desktop: handle is hidden via @media (min-width: 720px), skip drag
+          if (window.innerWidth >= 720) return;
+          dragging = true;
+          startY = e.clientY;
+          currentDelta = 0;
+          sheet.style.transition = 'none';
+          try { handle.setPointerCapture(e.pointerId); } catch (_) {}
+          e.preventDefault();
+        });
+
+        handle.addEventListener('pointermove', (e) => {
+          if (!dragging) return;
+          currentDelta = Math.max(0, e.clientY - startY);
+          sheet.style.transform = `translateY(${currentDelta}px)`;
+        });
+
+        function finish() {
+          if (!dragging) return;
+          dragging = false;
+          const sheetHeight = sheet.offsetHeight || 400;
+          const shouldClose = currentDelta > Math.min(140, sheetHeight * 0.22);
+          sheet.style.transition = 'transform .28s cubic-bezier(.32,.72,0,1)';
+          if (shouldClose) {
+            sheet.style.transform = 'translateY(100%)';
+            const fn = SHEET_DISMISS_FNS[sheet.id];
+            setTimeout(() => {
+              sheet.style.transition = '';
+              sheet.style.transform = '';
+              if (fn) fn();
+            }, 280);
+          } else {
+            sheet.style.transform = 'translateY(0)';
+            setTimeout(() => {
+              sheet.style.transition = '';
+              sheet.style.transform = '';
+            }, 280);
+          }
+        }
+        handle.addEventListener('pointerup', finish);
+        handle.addEventListener('pointercancel', finish);
+      });
+    }
+    initSheetDrag();
+
+    // ── SWIPE-DOWN-TO-DISMISS from anywhere on the sheet body
+    //    Only engages when the sheet is already scrolled to the top.
+    function initSheetSwipeDismiss() {
+      document.querySelectorAll('.sheet').forEach(sheet => {
+        let startY = 0;
+        let startScrollTop = 0;
+        let activeDrag = false;
+        let currentDelta = 0;
+
+        sheet.addEventListener('touchstart', (e) => {
+          if (window.innerWidth >= 720) return;          // desktop: centered modal
+          if (e.target.closest('.sheet-handle')) return; // handle has its own drag
+          startY = e.touches[0].clientY;
+          startScrollTop = sheet.scrollTop;
+          activeDrag = false;
+          currentDelta = 0;
+        }, { passive: true });
+
+        sheet.addEventListener('touchmove', (e) => {
+          if (window.innerWidth >= 720) return;
+          if (e.target.closest('.sheet-handle')) return;
+          if (startScrollTop > 0) return; // not at top — let native scroll do its thing
+          const delta = e.touches[0].clientY - startY;
+          if (!activeDrag) {
+            if (delta <= 6) return; // need a bit of downward intent before we hijack
+            activeDrag = true;
+            sheet.style.transition = 'none';
+          }
+          currentDelta = Math.max(0, delta);
+          sheet.style.transform = `translateY(${currentDelta}px)`;
+          e.preventDefault(); // block native scroll while we drag
+        }, { passive: false });
+
+        function endTouch() {
+          if (!activeDrag) return;
+          const wasDelta = currentDelta;
+          activeDrag = false;
+          currentDelta = 0;
+          const sheetHeight = sheet.offsetHeight || 400;
+          const shouldClose = wasDelta > Math.min(140, sheetHeight * 0.22);
+          sheet.style.transition = 'transform .28s cubic-bezier(.32,.72,0,1)';
+          if (shouldClose) {
+            sheet.style.transform = 'translateY(100%)';
+            const fn = SHEET_DISMISS_FNS[sheet.id];
+            setTimeout(() => {
+              sheet.style.transition = '';
+              sheet.style.transform = '';
+              if (fn) fn();
+            }, 280);
+          } else {
+            sheet.style.transform = 'translateY(0)';
+            setTimeout(() => {
+              sheet.style.transition = '';
+              sheet.style.transform = '';
+            }, 280);
+          }
+        }
+        sheet.addEventListener('touchend', endTouch);
+        sheet.addEventListener('touchcancel', endTouch);
+      });
+    }
+    initSheetSwipeDismiss();
 
     init();
   </script>
