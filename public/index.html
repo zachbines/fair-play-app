@@ -3,11 +3,9 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fair Play — Our Home System</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap"
-    rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Fair Play</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     :root {
       --cream: #FAF7F2;
@@ -22,15 +20,13 @@
       --light-gray: #D0CBC2;
       --p1-color: #C4714A;
       --p2-color: #6B7FA3;
-      --shadow: 0 4px 24px rgba(44, 44, 44, 0.08);
-      --shadow-lg: 0 12px 48px rgba(44, 44, 44, 0.14);
+      --shadow: 0 4px 24px rgba(44,44,44,.08);
+      --shadow-lg: 0 12px 48px rgba(44,44,44,.14);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-top: env(safe-area-inset-top, 0px);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'DM Sans', sans-serif;
@@ -38,963 +34,13 @@
       color: var(--charcoal);
       min-height: 100vh;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
-    .screen {
-      display: none;
-      min-height: 100vh;
-    }
-
-    .screen.active {
-      display: flex;
-      flex-direction: column;
-    }
-
-    #welcome {
-      background: var(--charcoal);
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 2rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    #welcome::before {
-      content: '';
-      position: absolute;
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(196, 113, 74, .18) 0%, transparent 70%);
-      top: -100px;
-      right: -100px;
-      border-radius: 50%;
-    }
-
-    #welcome::after {
-      content: '';
-      position: absolute;
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(107, 127, 163, .15) 0%, transparent 70%);
-      bottom: -80px;
-      left: -80px;
-      border-radius: 50%;
-    }
-
-    .welcome-inner {
-      position: relative;
-      z-index: 1;
-      max-width: 480px;
-    }
-
-    .welcome-eyebrow {
-      font-size: .75rem;
-      letter-spacing: .2em;
-      text-transform: uppercase;
-      color: var(--terracotta);
-      margin-bottom: 1.5rem;
-    }
-
-    .welcome-title {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(2.5rem, 8vw, 4rem);
-      color: var(--cream);
-      line-height: 1.1;
-      margin-bottom: 1rem;
-    }
-
-    .welcome-title em {
-      color: var(--terracotta);
-      font-style: italic;
-    }
-
-    .welcome-sub {
-      color: #9A9590;
-      font-size: 1rem;
-      line-height: 1.7;
-      margin-bottom: 2.5rem;
-      font-weight: 300;
-    }
-
-    .btn-primary {
-      background: var(--terracotta);
-      color: white;
-      border: none;
-      padding: .9rem 2.2rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: .95rem;
-      font-weight: 500;
-      border-radius: 100px;
-      cursor: pointer;
-      transition: all .2s;
-    }
-
-    .btn-primary:hover {
-      background: var(--terracotta-light);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(196, 113, 74, .35);
-    }
-
-    #setup {
-      background: var(--warm-white);
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-    }
-
-    .setup-card {
-      background: white;
-      border-radius: 24px;
-      padding: 3rem 2.5rem;
-      max-width: 480px;
-      width: 100%;
-      box-shadow: var(--shadow-lg);
-    }
-
-    .setup-step {
-      display: none;
-    }
-
-    .setup-step.active {
-      display: block;
-    }
-
-    .setup-label {
-      font-size: .75rem;
-      letter-spacing: .15em;
-      text-transform: uppercase;
-      color: var(--mid-gray);
-      margin-bottom: .5rem;
-    }
-
-    .setup-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.8rem;
-      margin-bottom: .75rem;
-      line-height: 1.2;
-    }
-
-    .setup-desc {
-      color: var(--mid-gray);
-      font-size: .9rem;
-      margin-bottom: 2rem;
-      line-height: 1.6;
-    }
-
-    .player-inputs {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .player-input-group {
-      display: flex;
-      align-items: center;
-      gap: .75rem;
-    }
-
-    .player-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .player-input-group input {
-      flex: 1;
-      border: 1.5px solid var(--sand);
-      border-radius: 12px;
-      padding: .75rem 1rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: .95rem;
-      outline: none;
-      transition: border-color .2s;
-      background: var(--cream);
-    }
-
-    .player-input-group input:focus {
-      border-color: var(--terracotta);
-    }
-
-    .setup-progress {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 2rem;
-    }
-
-    .progress-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--sand);
-      transition: background .3s;
-    }
-
-    .progress-dot.done {
-      background: var(--terracotta);
-    }
-
-    .identity-pick {
-      display: flex;
-      flex-direction: column;
-      gap: .75rem;
-      margin-bottom: 2rem;
-    }
-
-    .identity-btn {
-      display: flex;
-      align-items: center;
-      gap: .85rem;
-      padding: 1rem 1.25rem;
-      border-radius: 14px;
-      border: 2px solid var(--sand);
-      background: white;
-      cursor: pointer;
-      transition: all .2s;
-      font-family: 'DM Sans', sans-serif;
-    }
-
-    .identity-btn:hover {
-      border-color: var(--charcoal);
-    }
-
-    .identity-dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .identity-name {
-      font-size: .95rem;
-      font-weight: 500;
-    }
-
-    .cpe-list {
-      display: flex;
-      flex-direction: column;
-      gap: .5rem;
-      margin-bottom: 1rem;
-    }
-
-    .cpe-item {
-      display: flex;
-      align-items: flex-start;
-      gap: .6rem;
-      background: var(--cream);
-      border-radius: 10px;
-      padding: .6rem .75rem;
-      font-size: .85rem;
-      line-height: 1.4;
-    }
-
-    .cpe-letter {
-      width: 20px;
-      height: 20px;
-      border-radius: 6px;
-      background: var(--charcoal);
-      color: white;
-      font-size: .7rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-top: .05rem;
-    }
-
-    #app {
-      background: var(--cream);
-    }
-
-    .app-header {
-      background: white;
-      border-bottom: 1px solid var(--sand);
-      padding: 1rem 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .app-logo {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.2rem;
-    }
-
-    .app-logo span {
-      color: var(--terracotta);
-      font-style: italic;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: .6rem;
-    }
-
-    .header-players {
-      display: flex;
-      gap: .4rem;
-    }
-
-    .player-badge {
-      display: flex;
-      align-items: center;
-      gap: .4rem;
-      padding: .35rem .75rem;
-      border-radius: 100px;
-      font-size: .8rem;
-      font-weight: 500;
-    }
-
-    .player-badge-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-    }
-
-    .sync-indicator {
-      display: flex;
-      align-items: center;
-      gap: .35rem;
-      font-size: .72rem;
-      color: var(--mid-gray);
-      padding: .3rem .6rem;
-      border-radius: 100px;
-      background: var(--cream);
-    }
-
-    .sync-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--light-gray);
-      transition: background .3s;
-    }
-
-    .sync-dot.live {
-      background: #6BAA6E;
-      animation: pulse 2s infinite;
-    }
-
-    .sync-dot.syncing {
-      background: var(--terracotta);
-      animation: pulse .6s infinite;
-    }
-
-    @keyframes pulse {
-
-      0%,
-      100% {
-        opacity: 1
-      }
-
-      50% {
-        opacity: .4
-      }
-    }
-
-    .app-nav {
-      display: flex;
-      background: white;
-      border-bottom: 1px solid var(--sand);
-      overflow-x: auto;
-    }
-
-    .nav-tab {
-      padding: .9rem 1.25rem;
-      font-size: .85rem;
-      font-weight: 500;
-      color: var(--mid-gray);
-      border: none;
-      background: none;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      white-space: nowrap;
-      transition: all .2s;
-    }
-
-    .nav-tab.active {
-      color: var(--terracotta);
-      border-bottom-color: var(--terracotta);
-    }
-
-    .activity-bar {
-      background: white;
-      border-bottom: 1px solid var(--sand);
-      padding: .6rem 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-      font-size: .78rem;
-      color: var(--mid-gray);
-      min-height: 36px;
-      overflow: hidden;
-      flex-wrap: wrap;
-    }
-
-    .act-item {
-      display: flex;
-      align-items: center;
-      gap: .35rem;
-      animation: slideIn .4s ease;
-    }
-
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-8px)
-      }
-
-      to {
-        opacity: 1;
-        transform: none
-      }
-    }
-
-    .act-who {
-      font-weight: 600;
-    }
-
-    .tab-content {
-      display: none;
-      padding: 1.5rem;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    .deal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1.25rem;
-      flex-wrap: wrap;
-      gap: .75rem;
-    }
-
-    .deal-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.4rem;
-    }
-
-    .filter-row {
-      display: flex;
-      gap: .5rem;
-      flex-wrap: wrap;
-      margin-bottom: 1.25rem;
-    }
-
-    .filter-chip {
-      padding: .4rem .9rem;
-      border-radius: 100px;
-      border: 1.5px solid var(--sand);
-      background: white;
-      font-size: .8rem;
-      cursor: pointer;
-      transition: all .2s;
-      font-family: 'DM Sans', sans-serif;
-      color: var(--charcoal);
-    }
-
-    .filter-chip.active {
-      background: var(--charcoal);
-      color: white;
-      border-color: var(--charcoal);
-    }
-
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: .75rem;
-    }
-
-    .card-item {
-      background: white;
-      border-radius: 16px;
-      padding: 1rem;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: all .2s;
-      box-shadow: 0 2px 8px rgba(44, 44, 44, .06);
-      position: relative;
-    }
-
-    .card-item:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow);
-    }
-
-    .card-item.assigned-p1 {
-      border-color: var(--p1-color);
-      background: #FDF8F5;
-    }
-
-    .card-item.assigned-p2 {
-      border-color: var(--p2-color);
-      background: #F5F7FB;
-    }
-
-    .card-emoji {
-      font-size: 1.5rem;
-      margin-bottom: .5rem;
-    }
-
-    .card-name {
-      font-size: .82rem;
-      font-weight: 500;
-      line-height: 1.3;
-    }
-
-    .card-category {
-      font-size: .7rem;
-      color: var(--mid-gray);
-      margin-top: .25rem;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-    }
-
-    .card-owner-badge {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: .65rem;
-      font-weight: 600;
-      color: white;
-    }
-
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(44, 44, 44, .5);
-      z-index: 200;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      backdrop-filter: blur(4px);
-    }
-
-    .modal-overlay.open {
-      display: flex;
-    }
-
-    .modal {
-      background: white;
-      border-radius: 24px;
-      padding: 2rem;
-      max-width: 440px;
-      width: 100%;
-      box-shadow: var(--shadow-lg);
-      max-height: 90vh;
-      overflow-y: auto;
-      animation: modalIn .25s ease;
-    }
-
-    @keyframes modalIn {
-      from {
-        opacity: 0;
-        transform: translateY(16px) scale(.97)
-      }
-
-      to {
-        opacity: 1;
-        transform: none
-      }
-    }
-
-    .modal-emoji {
-      font-size: 2.5rem;
-      margin-bottom: .75rem;
-    }
-
-    .modal-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.5rem;
-      margin-bottom: .25rem;
-    }
-
-    .modal-category {
-      font-size: .75rem;
-      color: var(--mid-gray);
-      text-transform: uppercase;
-      letter-spacing: .1em;
-      margin-bottom: 1.25rem;
-    }
-
-    .modal-section-title {
-      font-size: .75rem;
-      text-transform: uppercase;
-      letter-spacing: .1em;
-      color: var(--mid-gray);
-      margin-bottom: .5rem;
-      margin-top: 1.25rem;
-    }
-
-    .standard-textarea {
-      width: 100%;
-      border: 1.5px solid var(--sand);
-      border-radius: 12px;
-      padding: .75rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: .88rem;
-      resize: vertical;
-      min-height: 80px;
-      outline: none;
-      transition: border-color .2s;
-      background: var(--cream);
-      line-height: 1.5;
-      color: var(--charcoal);
-    }
-
-    .standard-textarea:focus {
-      border-color: var(--terracotta);
-    }
-
-    .assign-row {
-      display: flex;
-      gap: .6rem;
-      margin-top: 1.25rem;
-    }
-
-    .assign-btn {
-      flex: 1;
-      padding: .8rem;
-      border-radius: 12px;
-      border: 2px solid;
-      font-family: 'DM Sans', sans-serif;
-      font-size: .9rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all .2s;
-    }
-
-    .assign-btn.p1 {
-      border-color: var(--p1-color);
-      color: var(--p1-color);
-      background: white;
-    }
-
-    .assign-btn.p1:hover,
-    .assign-btn.p1.active {
-      background: var(--p1-color);
-      color: white;
-    }
-
-    .assign-btn.p2 {
-      border-color: var(--p2-color);
-      color: var(--p2-color);
-      background: white;
-    }
-
-    .assign-btn.p2:hover,
-    .assign-btn.p2.active {
-      background: var(--p2-color);
-      color: white;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: .6rem;
-      margin-top: 1.5rem;
-    }
-
-    .btn-save {
-      flex: 1;
-      background: var(--charcoal);
-      color: white;
-      border: none;
-      padding: .85rem;
-      border-radius: 12px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: .9rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background .2s;
-    }
-
-    .btn-save:hover {
-      background: #444;
-    }
-
-    .btn-cancel {
-      background: var(--cream);
-      color: var(--mid-gray);
-      border: none;
-      padding: .85rem 1.2rem;
-      border-radius: 12px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: .9rem;
-      cursor: pointer;
-    }
-
-    .unassign-btn {
-      background: white;
-      color: #c0392b;
-      border: 1.5px solid #f0d0cc;
-      padding: .85rem 1rem;
-      border-radius: 12px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: .85rem;
-      cursor: pointer;
-    }
-
-    .tracker-summary {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: .75rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .summary-card {
-      background: white;
-      border-radius: 16px;
-      padding: 1.25rem;
-      box-shadow: 0 2px 8px rgba(44, 44, 44, .06);
-    }
-
-    .summary-player {
-      font-size: .75rem;
-      text-transform: uppercase;
-      letter-spacing: .1em;
-      margin-bottom: .25rem;
-    }
-
-    .summary-count {
-      font-family: 'Playfair Display', serif;
-      font-size: 2.5rem;
-      line-height: 1;
-      margin-bottom: .25rem;
-    }
-
-    .summary-label {
-      font-size: .8rem;
-      color: var(--mid-gray);
-    }
-
-    .balance-bar-wrap {
-      background: white;
-      border-radius: 16px;
-      padding: 1.25rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 2px 8px rgba(44, 44, 44, .06);
-    }
-
-    .balance-bar-title {
-      font-size: .8rem;
-      font-weight: 500;
-      margin-bottom: .75rem;
-    }
-
-    .balance-bar-track {
-      height: 10px;
-      background: var(--sand);
-      border-radius: 100px;
-      overflow: hidden;
-    }
-
-    .balance-bar-fill {
-      height: 100%;
-      background: linear-gradient(to right, var(--p1-color), var(--p2-color));
-      border-radius: 100px;
-      transition: width .6s ease;
-    }
-
-    .balance-bar-labels {
-      display: flex;
-      justify-content: space-between;
-      margin-top: .5rem;
-      font-size: .78rem;
-      color: var(--mid-gray);
-    }
-
-    .tracker-list {
-      display: flex;
-      flex-direction: column;
-      gap: .6rem;
-    }
-
-    .tracker-item {
-      background: white;
-      border-radius: 14px;
-      padding: .9rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: .75rem;
-      box-shadow: 0 1px 4px rgba(44, 44, 44, .05);
-    }
-
-    .tracker-emoji {
-      font-size: 1.2rem;
-      width: 32px;
-      text-align: center;
-    }
-
-    .tracker-info {
-      flex: 1;
-    }
-
-    .tracker-name {
-      font-size: .88rem;
-      font-weight: 500;
-    }
-
-    .tracker-cat {
-      font-size: .75rem;
-      color: var(--mid-gray);
-    }
-
-    .tracker-owner {
-      font-size: .78rem;
-      font-weight: 600;
-      padding: .3rem .7rem;
-      border-radius: 100px;
-      color: white;
-    }
-
-    .tracker-standard {
-      font-size: .75rem;
-      color: var(--mid-gray);
-      font-style: italic;
-      margin-top: .2rem;
-      line-height: 1.4;
-    }
-
-    .tracker-changed-by {
-      font-size: .7rem;
-      color: var(--light-gray);
-      margin-top: .15rem;
-    }
-
-    .rebalance-intro {
-      background: white;
-      border-radius: 16px;
-      padding: 1.25rem;
-      margin-bottom: 1.25rem;
-      box-shadow: 0 2px 8px rgba(44, 44, 44, .06);
-      border-left: 4px solid var(--sage);
-    }
-
-    .rebalance-intro p {
-      font-size: .88rem;
-      line-height: 1.6;
-    }
-
-    .rebalance-grid {
-      display: grid;
-      gap: .75rem;
-    }
-
-    .rebalance-item {
-      background: white;
-      border-radius: 14px;
-      padding: 1rem;
-      display: flex;
-      align-items: center;
-      gap: .75rem;
-      box-shadow: 0 1px 4px rgba(44, 44, 44, .05);
-    }
-
-    .rebalance-emoji {
-      font-size: 1.3rem;
-      width: 32px;
-      text-align: center;
-    }
-
-    .rebalance-info {
-      flex: 1;
-    }
-
-    .rebalance-name {
-      font-size: .88rem;
-      font-weight: 500;
-    }
-
-    .rebalance-assigned {
-      font-size: .78rem;
-      margin-top: .1rem;
-    }
-
-    .swap-btn {
-      background: var(--cream);
-      border: 1.5px solid var(--sand);
-      border-radius: 100px;
-      padding: .35rem .8rem;
-      font-size: .78rem;
-      cursor: pointer;
-      transition: all .2s;
-      font-family: 'DM Sans', sans-serif;
-      color: var(--charcoal);
-      font-weight: 500;
-    }
-
-    .swap-btn:hover {
-      background: var(--charcoal);
-      color: white;
-      border-color: var(--charcoal);
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 3rem 1rem;
-      color: var(--mid-gray);
-    }
-
-    .empty-state-icon {
-      font-size: 2.5rem;
-      margin-bottom: .75rem;
-    }
-
-    .empty-state p {
-      font-size: .9rem;
-      line-height: 1.6;
-    }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-    }
-
-    .section-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.3rem;
-    }
-
-    .toast {
-      position: fixed;
-      bottom: 1.5rem;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--charcoal);
-      color: white;
-      padding: .75rem 1.5rem;
-      border-radius: 100px;
-      font-size: .88rem;
-      z-index: 999;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .3s;
-      white-space: nowrap;
-    }
-
-    .toast.show {
-      opacity: 1;
-    }
+    .screen { display: none; min-height: 100vh; }
+    .screen.active { display: flex; flex-direction: column; }
 
+    /* ── LOADING ── */
     #loading-overlay {
       position: fixed;
       inset: 0;
@@ -1007,54 +53,819 @@
       gap: 1rem;
       transition: opacity .4s;
     }
-
-    #loading-overlay.fade {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .loading-logo {
-      font-family: 'Playfair Display', serif;
-      font-size: 2rem;
-      color: var(--charcoal);
-    }
-
-    .loading-logo span {
-      color: var(--terracotta);
-      font-style: italic;
-    }
-
-    .loading-dots {
-      display: flex;
-      gap: .4rem;
-    }
-
+    #loading-overlay.fade { opacity: 0; pointer-events: none; }
+    .loading-logo { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--charcoal); }
+    .loading-logo span { color: var(--terracotta); font-style: italic; }
+    .loading-dots { display: flex; gap: .4rem; }
     .loading-dot {
-      width: 8px;
-      height: 8px;
+      width: 8px; height: 8px;
       border-radius: 50%;
       background: var(--terracotta);
       animation: bounce .9s infinite;
     }
+    .loading-dot:nth-child(2) { animation-delay: .15s; }
+    .loading-dot:nth-child(3) { animation-delay: .3s; }
+    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
 
-    .loading-dot:nth-child(2) {
-      animation-delay: .15s
+    /* ── WELCOME ── */
+    #welcome {
+      background: var(--charcoal);
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem 2rem calc(2rem + var(--safe-bottom));
+      position: relative;
+      overflow: hidden;
+    }
+    #welcome::before {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(196,113,74,.18) 0%, transparent 70%);
+      top: -100px; right: -100px;
+      border-radius: 50%;
+    }
+    #welcome::after {
+      content: '';
+      position: absolute;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(107,127,163,.15) 0%, transparent 70%);
+      bottom: -80px; left: -80px;
+      border-radius: 50%;
+    }
+    .welcome-inner { position: relative; z-index: 1; max-width: 440px; }
+    .welcome-eyebrow {
+      font-size: .75rem; letter-spacing: .2em;
+      text-transform: uppercase; color: var(--terracotta);
+      margin-bottom: 1.5rem;
+    }
+    .welcome-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.4rem, 9vw, 3.8rem);
+      color: var(--cream); line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+    .welcome-title em { color: var(--terracotta); font-style: italic; }
+    .welcome-sub {
+      color: #9A9590; font-size: 1rem;
+      line-height: 1.7; margin-bottom: 2.5rem; font-weight: 300;
     }
 
-    .loading-dot:nth-child(3) {
-      animation-delay: .3s
+    /* ── BUTTONS ── */
+    .btn-primary {
+      background: var(--terracotta); color: white; border: none;
+      padding: 1rem 2.4rem;
+      font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 500;
+      border-radius: 100px; cursor: pointer; transition: all .2s;
+      display: inline-block;
+    }
+    .btn-primary:active { background: var(--terracotta-light); transform: scale(.97); }
+
+    /* ── SETUP ── */
+    #setup {
+      background: var(--warm-white);
+      align-items: center; justify-content: center;
+      padding: 2rem 1.5rem calc(2rem + var(--safe-bottom));
+    }
+    .setup-card {
+      background: white; border-radius: 24px;
+      padding: 2.5rem 2rem; max-width: 440px; width: 100%;
+      box-shadow: var(--shadow-lg);
+    }
+    .setup-step { display: none; }
+    .setup-step.active { display: block; }
+    .setup-label {
+      font-size: .75rem; letter-spacing: .15em;
+      text-transform: uppercase; color: var(--mid-gray); margin-bottom: .5rem;
+    }
+    .setup-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem; margin-bottom: .75rem; line-height: 1.2;
+    }
+    .setup-desc { color: var(--mid-gray); font-size: .9rem; margin-bottom: 2rem; line-height: 1.6; }
+    .setup-progress { display: flex; gap: 6px; margin-bottom: 2rem; }
+    .progress-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--sand); transition: background .3s;
+    }
+    .progress-dot.done { background: var(--terracotta); }
+    .player-inputs { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; }
+    .player-input-group { display: flex; align-items: center; gap: .75rem; }
+    .player-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .player-input-group input {
+      flex: 1; border: 1.5px solid var(--sand); border-radius: 12px;
+      padding: .85rem 1rem; font-family: 'DM Sans', sans-serif; font-size: 1rem;
+      outline: none; transition: border-color .2s; background: var(--cream);
+    }
+    .player-input-group input:focus { border-color: var(--terracotta); }
+    .identity-pick { display: flex; flex-direction: column; gap: .75rem; margin-bottom: 2rem; }
+    .identity-btn {
+      display: flex; align-items: center; gap: .85rem;
+      padding: 1.1rem 1.25rem; border-radius: 14px; border: 2px solid var(--sand);
+      background: white; cursor: pointer; transition: all .2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .identity-btn:active { border-color: var(--charcoal); }
+    .identity-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+    .identity-name { font-size: 1rem; font-weight: 500; }
+    .cpe-list { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1rem; }
+    .cpe-item {
+      display: flex; align-items: flex-start; gap: .6rem;
+      background: var(--cream); border-radius: 10px; padding: .65rem .75rem;
+      font-size: .9rem; line-height: 1.4;
+    }
+    .cpe-letter {
+      width: 22px; height: 22px; border-radius: 6px; background: var(--charcoal);
+      color: white; font-size: .72rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: .05rem;
     }
 
-    @keyframes bounce {
+    /* ── APP SHELL ── */
+    #app { background: var(--cream); padding-bottom: calc(60px + var(--safe-bottom)); }
 
-      0%,
-      100% {
-        transform: translateY(0)
+    .app-header {
+      background: white;
+      border-bottom: 1px solid var(--sand);
+      padding: calc(.85rem + var(--safe-top)) 1.25rem .85rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .app-logo { font-family: 'Playfair Display', serif; font-size: 1.25rem; }
+    .app-logo span { color: var(--terracotta); font-style: italic; }
+
+    .header-right { display: flex; align-items: center; gap: .75rem; }
+
+    .sync-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--light-gray); transition: background .3s;
+    }
+    .sync-dot.live { background: #6BAA6E; animation: pulse 2s infinite; }
+    .sync-dot.syncing { background: var(--terracotta); animation: pulse .6s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    .settings-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--mid-gray); font-size: 1.3rem; padding: .25rem;
+      display: flex; align-items: center;
+    }
+
+    /* ── BOTTOM NAV ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      border-top: 1px solid var(--sand);
+      display: flex;
+      padding-bottom: var(--safe-bottom);
+      z-index: 100;
+    }
+    .nav-tab {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: .25rem;
+      padding: .7rem .5rem;
+      border: none; background: none; cursor: pointer;
+      color: var(--mid-gray); transition: color .2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .nav-tab.active { color: var(--terracotta); }
+    .nav-tab-icon { font-size: 1.35rem; line-height: 1; }
+    .nav-tab-label { font-size: .7rem; font-weight: 500; letter-spacing: .02em; }
+
+    /* ── TAB CONTENT ── */
+    .tab-content { display: none; padding: 1.25rem; }
+    .tab-content.active { display: block; }
+
+    /* ── DEAL TAB ── */
+    .deal-header {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem; gap: .5rem;
+    }
+    .deal-title { font-family: 'Playfair Display', serif; font-size: 1.35rem; }
+    .deal-count { font-size: .85rem; color: var(--mid-gray); }
+
+    .filter-row {
+      display: flex; gap: .5rem;
+      flex-wrap: nowrap; overflow-x: auto;
+      margin-bottom: 1.25rem;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .filter-row::-webkit-scrollbar { display: none; }
+
+    .filter-chip {
+      padding: .45rem 1rem; border-radius: 100px;
+      border: 1.5px solid var(--sand); background: white;
+      font-size: .875rem; cursor: pointer; transition: all .2s;
+      font-family: 'DM Sans', sans-serif; color: var(--charcoal);
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .filter-chip.active { background: var(--charcoal); color: white; border-color: var(--charcoal); }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: .75rem;
+    }
+    .card-item {
+      background: white; border-radius: 16px; padding: 1rem;
+      cursor: pointer; border: 2px solid transparent; transition: all .2s;
+      box-shadow: 0 2px 8px rgba(44,44,44,.06);
+      position: relative; user-select: none;
+    }
+    .card-item:active { transform: scale(.97); }
+    .card-item.assigned-p1 { border-color: var(--p1-color); background: #FDF8F5; }
+    .card-item.assigned-p2 { border-color: var(--p2-color); background: #F5F7FB; }
+    .card-emoji { font-size: 1.6rem; margin-bottom: .5rem; }
+    .card-name { font-size: .875rem; font-weight: 500; line-height: 1.3; }
+    .card-owner-badge {
+      position: absolute; top: 8px; right: 8px;
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .7rem; font-weight: 600; color: white;
+    }
+
+    /* FAB */
+    .fab {
+      position: fixed;
+      bottom: calc(72px + var(--safe-bottom));
+      right: 1.25rem;
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: var(--terracotta);
+      color: white; border: none;
+      font-size: 1.6rem; cursor: pointer;
+      box-shadow: 0 4px 16px rgba(196,113,74,.45);
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+      z-index: 99;
+    }
+    .fab:active { transform: scale(.93); }
+    .fab.hidden { display: none; }
+
+    /* ── TRACKER TAB ── */
+    .tracker-players {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: .75rem; margin-bottom: 1rem;
+    }
+    .tracker-player-card {
+      background: white; border-radius: 16px; padding: 1.1rem;
+      box-shadow: 0 2px 8px rgba(44,44,44,.06);
+      display: flex; align-items: center; gap: .75rem;
+    }
+    .tracker-player-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .tracker-player-name { font-size: .8rem; font-weight: 500; color: var(--mid-gray); }
+    .tracker-player-count {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; line-height: 1;
+    }
+    .tracker-player-label { font-size: .78rem; color: var(--mid-gray); }
+
+    .balance-bar-wrap {
+      background: white; border-radius: 16px; padding: 1.1rem;
+      margin-bottom: 1.25rem; box-shadow: 0 2px 8px rgba(44,44,44,.06);
+    }
+    .balance-bar-title { font-size: .82rem; font-weight: 500; margin-bottom: .6rem; }
+    .balance-bar-track { height: 8px; background: var(--sand); border-radius: 100px; overflow: hidden; }
+    .balance-bar-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--p1-color), var(--p2-color));
+      border-radius: 100px; transition: width .6s ease;
+    }
+    .balance-bar-labels {
+      display: flex; justify-content: space-between;
+      margin-top: .5rem; font-size: .8rem; color: var(--mid-gray);
+    }
+    .tracker-list { display: flex; flex-direction: column; gap: .6rem; }
+    .tracker-item {
+      background: white; border-radius: 14px; padding: .9rem 1rem;
+      display: flex; align-items: center; gap: .75rem;
+      box-shadow: 0 1px 4px rgba(44,44,44,.05);
+    }
+    .tracker-emoji { font-size: 1.3rem; width: 32px; text-align: center; }
+    .tracker-info { flex: 1; min-width: 0; }
+    .tracker-name { font-size: .9rem; font-weight: 500; }
+    .tracker-cat { font-size: .8rem; color: var(--mid-gray); }
+    .tracker-owner {
+      font-size: .8rem; font-weight: 600; padding: .3rem .7rem;
+      border-radius: 100px; color: white; white-space: nowrap; flex-shrink: 0;
+    }
+    .tracker-standard { font-size: .8rem; color: var(--mid-gray); font-style: italic; margin-top: .2rem; line-height: 1.4; }
+    .tracker-changed-by { font-size: .75rem; color: var(--light-gray); margin-top: .15rem; }
+
+    /* ── REBALANCE TAB ── */
+    .rebalance-intro {
+      background: white; border-radius: 14px; padding: 1.1rem;
+      margin-bottom: 1.25rem; border-left: 4px solid var(--sage);
+      font-size: .9rem; line-height: 1.6;
+    }
+    .rebalance-grid { display: flex; flex-direction: column; gap: .6rem; }
+    .rebalance-item {
+      background: white; border-radius: 14px; padding: .9rem 1rem;
+      display: flex; align-items: center; gap: .75rem;
+      box-shadow: 0 1px 4px rgba(44,44,44,.05);
+    }
+    .rebalance-emoji { font-size: 1.3rem; width: 32px; text-align: center; }
+    .rebalance-info { flex: 1; min-width: 0; }
+    .rebalance-name { font-size: .9rem; font-weight: 500; }
+    .rebalance-assigned { font-size: .82rem; margin-top: .1rem; }
+    .swap-btn {
+      background: var(--cream); border: 1.5px solid var(--sand);
+      border-radius: 100px; padding: .4rem .85rem;
+      font-size: .82rem; cursor: pointer; transition: all .2s;
+      font-family: 'DM Sans', sans-serif; color: var(--charcoal);
+      font-weight: 500; white-space: nowrap; flex-shrink: 0;
+    }
+    .swap-btn:active { background: var(--charcoal); color: white; border-color: var(--charcoal); }
+
+    /* ── SECTION TITLE ── */
+    .section-title { font-family: 'Playfair Display', serif; font-size: 1.35rem; margin-bottom: 1rem; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state { text-align: center; padding: 3rem 1rem; color: var(--mid-gray); }
+    .empty-state-icon { font-size: 2.5rem; margin-bottom: .75rem; }
+    .empty-state p { font-size: .9rem; line-height: 1.6; }
+
+    /* ── BOTTOM SHEET ── */
+    .sheet-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(44,44,44,.45);
+      z-index: 200;
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+    }
+    .sheet-overlay.open { display: block; }
+
+    .sheet {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      border-radius: 20px 20px 0 0;
+      padding: 0 1.5rem calc(1.5rem + var(--safe-bottom));
+      max-height: 92vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      z-index: 201;
+      transform: translateY(100%);
+      transition: transform .3s cubic-bezier(.32,.72,0,1);
+    }
+    .sheet.open { transform: translateY(0); }
+
+    .sheet-handle {
+      width: 36px; height: 4px; border-radius: 2px;
+      background: var(--sand); margin: .75rem auto 1.5rem;
+    }
+
+    .sheet-emoji { font-size: 2.5rem; margin-bottom: .5rem; }
+    .sheet-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: .2rem; }
+    .sheet-category {
+      font-size: .8rem; color: var(--mid-gray);
+      text-transform: uppercase; letter-spacing: .1em; margin-bottom: 1.25rem;
+    }
+    .sheet-section-title {
+      font-size: .78rem; text-transform: uppercase; letter-spacing: .1em;
+      color: var(--mid-gray); margin-bottom: .5rem; margin-top: 1.25rem;
+    }
+
+    .standard-textarea {
+      width: 100%; border: 1.5px solid var(--sand); border-radius: 12px;
+      padding: .85rem; font-family: 'DM Sans', sans-serif; font-size: .9rem;
+      resize: none; min-height: 80px; outline: none;
+      transition: border-color .2s; background: var(--cream);
+      line-height: 1.5; color: var(--charcoal);
+    }
+    .standard-textarea:focus { border-color: var(--terracotta); }
+
+    .assign-row { display: flex; gap: .6rem; margin-top: 1.25rem; }
+    .assign-btn {
+      flex: 1; padding: .9rem; border-radius: 12px;
+      border: 2px solid; font-family: 'DM Sans', sans-serif;
+      font-size: .95rem; font-weight: 500; cursor: pointer; transition: all .2s;
+    }
+    .assign-btn.p1 { border-color: var(--p1-color); color: var(--p1-color); background: white; }
+    .assign-btn.p1.active { background: var(--p1-color); color: white; }
+    .assign-btn.p2 { border-color: var(--p2-color); color: var(--p2-color); background: white; }
+    .assign-btn.p2.active { background: var(--p2-color); color: white; }
+
+    .sheet-actions { display: flex; gap: .6rem; margin-top: 1.25rem; }
+    .btn-save {
+      flex: 1; background: var(--charcoal); color: white; border: none;
+      padding: .95rem; border-radius: 12px;
+      font-family: 'DM Sans', sans-serif; font-size: .95rem; font-weight: 500;
+      cursor: pointer; transition: background .2s;
+    }
+    .btn-save:active { background: #444; }
+    .btn-cancel {
+      background: var(--cream); color: var(--mid-gray); border: none;
+      padding: .95rem 1.2rem; border-radius: 12px;
+      font-family: 'DM Sans', sans-serif; font-size: .95rem; cursor: pointer;
+    }
+    .unassign-btn {
+      background: white; color: #c0392b; border: 1.5px solid #f0d0cc;
+      padding: .95rem 1rem; border-radius: 12px;
+      font-family: 'DM Sans', sans-serif; font-size: .875rem; cursor: pointer;
+    }
+    .sheet-danger-row { display: flex; gap: .5rem; margin-top: .75rem; flex-wrap: wrap; }
+    .btn-danger {
+      background: white; color: #c0392b; border: 1.5px solid #f0d0cc;
+      padding: .55rem .9rem; border-radius: 10px;
+      font-family: 'DM Sans', sans-serif; font-size: .82rem; cursor: pointer;
+    }
+    .btn-danger:active { background: #fdf0ee; }
+
+    /* ── ADD CARD SHEET ── */
+    .add-sheet-field { margin-bottom: 1rem; }
+    .add-sheet-label {
+      font-size: .78rem; text-transform: uppercase; letter-spacing: .1em;
+      color: var(--mid-gray); margin-bottom: .4rem; display: block;
+    }
+    .add-sheet-input {
+      width: 100%; border: 1.5px solid var(--sand); border-radius: 12px;
+      padding: .8rem .9rem; font-family: 'DM Sans', sans-serif; font-size: .95rem;
+      outline: none; background: var(--cream); color: var(--charcoal);
+      transition: border-color .2s;
+    }
+    .add-sheet-input:focus { border-color: var(--terracotta); }
+    .add-sheet-row { display: flex; gap: .75rem; margin-bottom: 1rem; }
+    .emoji-input {
+      width: 64px; border: 1.5px solid var(--sand); border-radius: 12px;
+      padding: .7rem; font-size: 1.4rem; text-align: center; outline: none;
+      background: var(--cream); flex-shrink: 0;
+    }
+
+    /* ── SETTINGS SHEET ── */
+    .settings-item {
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--sand);
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer;
+    }
+    .settings-item:last-child { border-bottom: none; }
+    .settings-item-label { font-size: .95rem; font-weight: 500; }
+    .settings-item-sub { font-size: .82rem; color: var(--mid-gray); margin-top: .15rem; }
+    .settings-players { display: flex; gap: .5rem; margin-top: .25rem; }
+    .settings-player-chip {
+      display: flex; align-items: center; gap: .4rem;
+      padding: .3rem .7rem; border-radius: 100px;
+      font-size: .82rem; font-weight: 500;
+    }
+    .settings-player-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: calc(80px + var(--safe-bottom));
+      left: 50%; transform: translateX(-50%);
+      background: var(--charcoal); color: white;
+      padding: .75rem 1.5rem; border-radius: 100px;
+      font-size: .9rem; z-index: 999;
+      opacity: 0; pointer-events: none;
+      transition: opacity .3s; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; }
+
+    /* ── ACTIVITY LINE ── */
+    .activity-line {
+      padding: .5rem 1.25rem;
+      font-size: .78rem;
+      color: var(--mid-gray);
+      background: var(--cream);
+      border-bottom: 1px solid var(--sand);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .activity-line strong { color: var(--charcoal); }
+
+    /* ── CARD REMOVE (X) ── */
+    .card-remove-btn {
+      position: absolute;
+      top: -7px; left: -7px;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--charcoal);
+      color: white;
+      border: 2px solid var(--cream);
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity .15s, transform .15s;
+      z-index: 2;
+      padding: 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,.25);
+    }
+    .card-item:hover .card-remove-btn { opacity: 1; }
+    .card-remove-btn:hover { transform: scale(1.12); }
+    .card-remove-btn:active { transform: scale(.92); }
+    @media (hover: none) {
+      .card-remove-btn { opacity: 1; }
+    }
+
+    /* ── CONFIRM MODAL ── */
+    .confirm-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(44,44,44,.55);
+      z-index: 300;
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .confirm-overlay.open { display: flex; }
+    .confirm-modal {
+      background: white;
+      border-radius: 20px;
+      padding: 1.75rem 1.5rem 1.25rem;
+      max-width: 360px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+    }
+    .confirm-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      margin-bottom: .55rem;
+    }
+    .confirm-body {
+      color: var(--mid-gray);
+      font-size: .9rem;
+      line-height: 1.55;
+      margin-bottom: 1.25rem;
+    }
+    .confirm-actions { display: flex; gap: .55rem; }
+    .confirm-actions .btn-cancel { flex: 1; padding: .95rem 1rem; }
+    .btn-confirm-danger {
+      flex: 1;
+      background: #c0392b;
+      color: white;
+      border: none;
+      padding: .95rem;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-confirm-danger:active { background: #a82e22; }
+
+    /* ── ADD CARD CHOOSER ── */
+    .add-choice-row {
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+      margin-bottom: 1rem;
+    }
+    .add-choice-btn {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.15rem 1.25rem;
+      border-radius: 16px;
+      border: 2px solid var(--sand);
+      background: white;
+      cursor: pointer;
+      transition: all .2s;
+      font-family: 'DM Sans', sans-serif;
+      text-align: left;
+      width: 100%;
+    }
+    .add-choice-btn:hover { border-color: var(--terracotta); background: var(--cream); }
+    .add-choice-btn:active { transform: scale(.98); }
+    .add-choice-icon {
+      font-size: 1.7rem;
+      width: 42px;
+      flex-shrink: 0;
+      text-align: center;
+    }
+    .add-choice-text { flex: 1; min-width: 0; }
+    .add-choice-title { font-size: 1rem; font-weight: 500; margin-bottom: .15rem; color: var(--charcoal); }
+    .add-choice-sub { font-size: .82rem; color: var(--mid-gray); line-height: 1.4; }
+    .add-choice-arrow { color: var(--mid-gray); font-size: 1.1rem; flex-shrink: 0; }
+
+    /* ── LIBRARY PICKER ── */
+    .sheet-header-row {
+      display: flex;
+      align-items: center;
+      gap: .25rem;
+      margin-bottom: .35rem;
+    }
+    .sheet-back-btn {
+      background: none; border: none;
+      font-size: 1.4rem; color: var(--mid-gray);
+      cursor: pointer; padding: .15rem .55rem;
+      border-radius: 8px; line-height: 1;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .sheet-back-btn:hover { background: var(--cream); color: var(--charcoal); }
+    .library-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: .6rem;
+      padding-bottom: .5rem;
+    }
+    .library-card {
+      background: var(--cream);
+      border-radius: 14px;
+      padding: .85rem .8rem;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all .15s;
+      position: relative;
+    }
+    .library-card:hover { border-color: var(--terracotta); background: white; }
+    .library-card:active { transform: scale(.97); }
+    .library-card.already-added { opacity: .55; }
+    .library-card-emoji { font-size: 1.5rem; margin-bottom: .4rem; }
+    .library-card-name { font-size: .82rem; font-weight: 500; line-height: 1.3; color: var(--charcoal); }
+    .library-card-cat { font-size: .7rem; color: var(--mid-gray); margin-top: .2rem; }
+    .library-added-tag {
+      position: absolute;
+      top: 6px; right: 6px;
+      font-size: .62rem;
+      background: var(--sage);
+      color: white;
+      padding: .12rem .42rem;
+      border-radius: 6px;
+      font-weight: 500;
+      letter-spacing: .02em;
+    }
+    .library-card.selected {
+      border-color: var(--terracotta);
+      background: white;
+      box-shadow: 0 4px 14px rgba(196,113,74,.18);
+    }
+    .library-check {
+      position: absolute;
+      top: 6px; right: 6px;
+      width: 22px; height: 22px;
+      background: var(--terracotta);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .8rem;
+      font-weight: 700;
+      z-index: 2;
+      box-shadow: 0 2px 6px rgba(196,113,74,.4);
+    }
+    .library-footer {
+      display: none;
+      position: sticky;
+      bottom: 0;
+      background: linear-gradient(to bottom, rgba(255,253,249,0) 0%, var(--warm-white) 35%);
+      padding: 1.25rem 0 .25rem;
+      margin-top: .25rem;
+      align-items: center;
+      gap: 1rem;
+    }
+    .library-footer.open { display: flex; }
+    .library-footer-clear {
+      font-size: .85rem;
+      color: var(--mid-gray);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      padding: .5rem .25rem;
+      flex-shrink: 0;
+    }
+    .library-footer-clear:hover { color: var(--charcoal); }
+    .library-footer .btn-save { flex: 1; }
+    .library-selectall {
+      font-size: .82rem;
+      color: var(--mid-gray);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      margin-left: .25rem;
+    }
+    .library-selectall:hover { color: var(--charcoal); }
+
+    /* ── EDIT BUTTON in detail sheet ── */
+    .btn-edit {
+      background: white; color: var(--charcoal); border: 1.5px solid var(--sand);
+      padding: .55rem .9rem; border-radius: 10px;
+      font-family: 'DM Sans', sans-serif; font-size: .82rem; cursor: pointer;
+    }
+    .btn-edit:active { background: var(--cream); }
+
+    /* ─────────────────────────── DESKTOP ─────────────────────────── */
+    @media (min-width: 720px) {
+      /* Cap main content width so cards & lists don't stretch edge-to-edge */
+      #app .tab-content {
+        max-width: 880px;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 1.75rem 1.5rem 1.5rem;
+      }
+      .app-header {
+        padding-left: max(1.5rem, calc(50vw - 440px));
+        padding-right: max(1.5rem, calc(50vw - 440px));
+      }
+      .activity-line {
+        padding-left: max(1.5rem, calc(50vw - 440px));
+        padding-right: max(1.5rem, calc(50vw - 440px));
+      }
+      .bottom-nav {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        width: auto;
+        min-width: 360px;
+        max-width: 480px;
+        border: 1px solid var(--sand);
+        border-radius: 18px;
+        bottom: 1.25rem;
+        box-shadow: 0 6px 24px rgba(44,44,44,.10);
+        padding-bottom: 0;
+      }
+      .nav-tab { padding: .7rem 1.5rem; }
+      .nav-tab-icon { font-size: 1.25rem; }
+
+      .fab {
+        right: max(1.5rem, calc(50vw - 440px));
+        bottom: calc(110px + var(--safe-bottom));
+        width: 56px; height: 56px;
+        font-size: 1.7rem;
+      }
+      .fab:hover { box-shadow: 0 6px 20px rgba(196,113,74,.55); }
+
+      /* Card grid gets a tighter min-width that scales nicely up */
+      .cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        gap: 1rem;
       }
 
-      50% {
-        transform: translateY(-6px)
+      /* Sheets become centered modals on desktop */
+      .sheet-overlay { backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+      .sheet {
+        bottom: auto;
+        top: 6vh;
+        left: 50%;
+        right: auto;
+        width: calc(100% - 3rem);
+        max-width: 520px;
+        border-radius: 20px;
+        max-height: 86vh;
+        padding: 1.25rem 1.75rem 1.5rem;
+        transform: translate(-50%, -120vh);
+        transition: transform .35s cubic-bezier(.32,.72,0,1), opacity .25s;
+        opacity: 0;
+        box-shadow: 0 24px 60px rgba(44,44,44,.20);
       }
+      .sheet.open {
+        transform: translate(-50%, 0);
+        opacity: 1;
+      }
+      .sheet-handle { display: none; }
+
+      /* Library picker has a grid → a bit wider */
+      #library-sheet { max-width: 680px; }
+
+      /* Detail sheet polish: emoji + title side by side */
+      #modal-sheet .sheet-emoji {
+        display: inline-block;
+        font-size: 2rem;
+        margin-right: .75rem;
+        vertical-align: middle;
+      }
+      #modal-sheet .sheet-title {
+        display: inline-block;
+        vertical-align: middle;
+        margin-bottom: 0;
+      }
+
+      /* Buttons feel a bit nicer with subtle hover on desktop */
+      .btn-primary:hover { background: var(--terracotta-light); }
+      .btn-save:hover { background: #1f1f1f; }
+      .swap-btn:hover { background: var(--charcoal); color: white; border-color: var(--charcoal); }
+      .filter-chip:hover:not(.active) { border-color: var(--charcoal); }
+      .card-item { transition: transform .15s, box-shadow .15s, border-color .15s, background .15s; }
+      .card-item:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(44,44,44,.10); }
+    }
+
+    @media (min-width: 1100px) {
+      #app .tab-content { max-width: 1000px; }
+      .app-header,
+      .activity-line {
+        padding-left: max(1.5rem, calc(50vw - 500px));
+        padding-right: max(1.5rem, calc(50vw - 500px));
+      }
+      .fab { right: max(1.5rem, calc(50vw - 500px)); }
     }
   </style>
 </head>
@@ -1070,187 +881,304 @@
     </div>
   </div>
 
+  <!-- WELCOME -->
   <div id="welcome" class="screen">
-    <div
-      style="background:var(--charcoal);flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:2rem;position:relative;overflow:hidden;">
-      <div
-        style="position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(196,113,74,.18) 0%,transparent 70%);top:-100px;right:-100px;border-radius:50%;">
-      </div>
-      <div
-        style="position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(107,127,163,.15) 0%,transparent 70%);bottom:-80px;left:-80px;border-radius:50%;">
-      </div>
-      <div style="position:relative;z-index:1;max-width:480px;">
-        <p
-          style="font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:var(--terracotta);margin-bottom:1.5rem;">
-          The Fair Play Method</p>
-        <h1
-          style="font-family:'Playfair Display',serif;font-size:clamp(2.5rem,8vw,4rem);color:var(--cream);line-height:1.1;margin-bottom:1rem;">
-          Run your home <em style="color:var(--terracotta);">together</em></h1>
-        <p style="color:#9A9590;font-size:1rem;line-height:1.7;margin-bottom:2.5rem;font-weight:300;">Deal cards, own
-          the work, keep things fair — a live shared system for two.</p>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:2.5rem 2rem;position:relative;overflow:hidden;background:var(--charcoal);">
+      <div style="position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(196,113,74,.18) 0%,transparent 70%);top:-100px;right:-100px;border-radius:50%;"></div>
+      <div style="position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(107,127,163,.15) 0%,transparent 70%);bottom:-80px;left:-80px;border-radius:50%;"></div>
+      <div class="welcome-inner">
+        <p class="welcome-eyebrow">The Fair Play Method</p>
+        <h1 class="welcome-title">Run your home <em>together</em></h1>
+        <p class="welcome-sub">Deal cards, own the work, keep things fair — a live shared system for two.</p>
         <button class="btn-primary" onclick="goToSetup()">Get Started →</button>
       </div>
     </div>
   </div>
 
-  <div id="setup" class="screen"
-    style="background:var(--warm-white);align-items:center;justify-content:center;padding:2rem;">
-    <div class="setup-card">
-      <div class="setup-progress">
-        <div class="progress-dot done" id="dot-1"></div>
-        <div class="progress-dot" id="dot-2"></div>
-        <div class="progress-dot" id="dot-3"></div>
-      </div>
-      <div class="setup-step active" id="step-1">
-        <p class="setup-label">Step 1 of 3</p>
-        <h2 class="setup-title">Who's playing?</h2>
-        <p class="setup-desc">Enter both partners' names. These are shared and saved to your server.</p>
-        <div class="player-inputs">
-          <div class="player-input-group">
-            <div class="player-dot" style="background:var(--p1-color)"></div>
-            <input type="text" id="p1name" placeholder="Partner 1 name" maxlength="20">
-          </div>
-          <div class="player-input-group">
-            <div class="player-dot" style="background:var(--p2-color)"></div>
-            <input type="text" id="p2name" placeholder="Partner 2 name" maxlength="20">
-          </div>
+  <!-- SETUP -->
+  <div id="setup" class="screen">
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:2rem 1.5rem;">
+      <div class="setup-card">
+        <div class="setup-progress">
+          <div class="progress-dot done" id="dot-1"></div>
+          <div class="progress-dot" id="dot-2"></div>
+          <div class="progress-dot" id="dot-3"></div>
         </div>
-        <button class="btn-primary" onclick="setupStep2()">Continue →</button>
-      </div>
-      <div class="setup-step" id="step-2">
-        <p class="setup-label">Step 2 of 3</p>
-        <h2 class="setup-title">Who are you?</h2>
-        <p class="setup-desc">Pick yourself so the app knows who's making changes. Your partner does the same on their
-          device.</p>
-        <div class="identity-pick" id="identity-pick"></div>
-      </div>
-      <div class="setup-step" id="step-3">
-        <p class="setup-label">Step 3 of 3</p>
-        <h2 class="setup-title">How it works</h2>
-        <p class="setup-desc">Each card = a full task. Whoever holds it owns all three steps:</p>
-        <div class="cpe-list" style="margin-bottom:1.25rem;">
-          <div class="cpe-item">
-            <div class="cpe-letter">C</div>
-            <div><strong>Conceive</strong> — notice the need</div>
+        <div class="setup-step active" id="step-1">
+          <p class="setup-label">Step 1 of 3</p>
+          <h2 class="setup-title">Who's playing?</h2>
+          <p class="setup-desc">Enter both partners' names. These are shared and saved to your server.</p>
+          <div class="player-inputs">
+            <div class="player-input-group">
+              <div class="player-dot" style="background:var(--p1-color)"></div>
+              <input type="text" id="p1name" placeholder="Partner 1 name" maxlength="20">
+            </div>
+            <div class="player-input-group">
+              <div class="player-dot" style="background:var(--p2-color)"></div>
+              <input type="text" id="p2name" placeholder="Partner 2 name" maxlength="20">
+            </div>
           </div>
-          <div class="cpe-item">
-            <div class="cpe-letter">P</div>
-            <div><strong>Plan</strong> — figure out how & when</div>
-          </div>
-          <div class="cpe-item">
-            <div class="cpe-letter">E</div>
-            <div><strong>Execute</strong> — do it, fully</div>
-          </div>
+          <button class="btn-primary" onclick="setupStep2()">Continue →</button>
         </div>
-        <p
-          style="font-size:.82rem;color:var(--mid-gray);margin-bottom:1.5rem;line-height:1.6;background:var(--cream);padding:.75rem 1rem;border-radius:10px;">
-          🔄 <strong>Live sync:</strong> All changes save to your server instantly and appear on both devices.</p>
-        <button class="btn-primary" onclick="launchApp()">Start Dealing Cards →</button>
+        <div class="setup-step" id="step-2">
+          <p class="setup-label">Step 2 of 3</p>
+          <h2 class="setup-title">Who are you?</h2>
+          <p class="setup-desc">Pick yourself so the app knows who's making changes.</p>
+          <div class="identity-pick" id="identity-pick"></div>
+        </div>
+        <div class="setup-step" id="step-3">
+          <p class="setup-label">Step 3 of 3</p>
+          <h2 class="setup-title">How it works</h2>
+          <p class="setup-desc">Each card = a full task. Whoever holds it owns all three steps:</p>
+          <div class="cpe-list" style="margin-bottom:1.25rem;">
+            <div class="cpe-item"><div class="cpe-letter">C</div><div><strong>Conceive</strong> — notice the need</div></div>
+            <div class="cpe-item"><div class="cpe-letter">P</div><div><strong>Plan</strong> — figure out how & when</div></div>
+            <div class="cpe-item"><div class="cpe-letter">E</div><div><strong>Execute</strong> — do it, fully</div></div>
+          </div>
+          <p style="font-size:.875rem;color:var(--mid-gray);margin-bottom:1.5rem;line-height:1.6;background:var(--cream);padding:.75rem 1rem;border-radius:10px;">🔄 <strong>Live sync:</strong> Changes save instantly and appear on both devices.</p>
+          <button class="btn-primary" onclick="launchApp()">Start Dealing Cards →</button>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- APP -->
   <div id="app" class="screen">
     <header class="app-header">
       <div class="app-logo">Fair <span>Play</span></div>
       <div class="header-right">
-        <div class="sync-indicator">
-          <div class="sync-dot" id="sync-dot"></div>
-          <span id="sync-label">live</span>
-        </div>
-        <div class="header-players">
-          <div class="player-badge" style="background:#FDF3EE">
-            <div class="player-badge-dot" style="background:var(--p1-color)"></div>
-            <span id="header-p1" style="color:var(--p1-color)"></span>
-          </div>
-          <div class="player-badge" style="background:#F0F3F8">
-            <div class="player-badge-dot" style="background:var(--p2-color)"></div>
-            <span id="header-p2" style="color:var(--p2-color)"></span>
-          </div>
-        </div>
+        <div class="sync-dot" id="sync-dot" title="Sync status"></div>
+        <button class="settings-btn" onclick="openSettings()" aria-label="Settings">⋯</button>
       </div>
     </header>
-    <div class="activity-bar" id="activity-bar">
-      <span style="color:var(--light-gray);font-size:.78rem;">Recent activity will appear here…</span>
-    </div>
-    <nav class="app-nav">
-      <button class="nav-tab active" onclick="switchTab('deal',this)">🃏 Deal Cards</button>
-      <button class="nav-tab" onclick="switchTab('tracker',this)">📋 Tracker</button>
-      <button class="nav-tab" onclick="switchTab('rebalance',this)">⚖️ Rebalance</button>
-    </nav>
-    <!-- Reset button (put somewhere subtle, like a settings footer) -->
-    <div style="text-align:center; padding: 2rem 0 1rem; opacity: 0.5;">
-      <button onclick="resetApp()" style="
-          background: none;
-          border: 1px solid #888;
-          color: #888;
-          padding: 0.4rem 1rem;
-          border-radius: 6px;
-          font-size: 0.75rem;
-          cursor: pointer;
-          font-family: inherit;
-        ">⚠ Reset All Data</button>
+
+    <div class="activity-line" id="activity-line">
+      <span style="color:var(--light-gray);">No recent activity</span>
     </div>
 
+    <!-- DEAL TAB -->
     <div id="tab-deal" class="tab-content active">
       <div class="deal-header">
-        <h2 class="deal-title">Deal the Cards</h2>
-        <span id="deal-count" style="font-size:.82rem;color:var(--mid-gray)"></span>
+        <h2 class="deal-title">Cards</h2>
+        <span class="deal-count" id="deal-count"></span>
       </div>
       <div class="filter-row" id="filter-row"></div>
       <div class="cards-grid" id="cards-grid"></div>
     </div>
+
+    <!-- TRACKER TAB -->
     <div id="tab-tracker" class="tab-content">
-      <div class="section-header">
-        <h2 class="section-title">Who Owns What</h2>
-      </div>
-      <div class="tracker-summary" id="tracker-summary"></div>
+      <h2 class="section-title">Who Owns What</h2>
+      <div class="tracker-players" id="tracker-players"></div>
       <div class="balance-bar-wrap">
         <div class="balance-bar-title">Load balance</div>
         <div class="balance-bar-track">
           <div class="balance-bar-fill" id="balance-fill" style="width:50%"></div>
         </div>
-        <div class="balance-bar-labels"><span id="balance-p1-label"></span><span id="balance-p2-label"></span></div>
+        <div class="balance-bar-labels">
+          <span id="balance-p1-label"></span>
+          <span id="balance-p2-label"></span>
+        </div>
       </div>
       <div class="tracker-list" id="tracker-list"></div>
     </div>
+
+    <!-- REBALANCE TAB -->
     <div id="tab-rebalance" class="tab-content">
+      <h2 class="section-title">Rebalance</h2>
       <div class="rebalance-intro">
-        <p>Fair doesn't mean 50/50 — it means <strong>intentional</strong>. Swap any card that feels off. Talk about
-          capacity, not scorekeeping.</p>
+        Fair doesn't mean 50/50 — it means <strong>intentional</strong>. Swap any card that feels off.
       </div>
       <div class="rebalance-grid" id="rebalance-grid"></div>
     </div>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+      <button class="nav-tab active" id="nav-deal" onclick="switchTab('deal',this)">
+        <span class="nav-tab-icon">🃏</span>
+        <span class="nav-tab-label">Cards</span>
+      </button>
+      <button class="nav-tab" id="nav-tracker" onclick="switchTab('tracker',this)">
+        <span class="nav-tab-icon">📋</span>
+        <span class="nav-tab-label">Tracker</span>
+      </button>
+      <button class="nav-tab" id="nav-rebalance" onclick="switchTab('rebalance',this)">
+        <span class="nav-tab-icon">⚖️</span>
+        <span class="nav-tab-label">Rebalance</span>
+      </button>
+    </nav>
   </div>
 
-  <div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
-    <div class="modal">
-      <div id="modal-emoji" class="modal-emoji"></div>
-      <h3 class="modal-title" id="modal-title"></h3>
-      <p class="modal-category" id="modal-category"></p>
-      <p class="modal-section-title">What this card includes (CPE)</p>
-      <div class="cpe-list" id="modal-cpe"></div>
-      <p class="modal-section-title">Our standard for this card</p>
-      <textarea class="standard-textarea" id="modal-standard"
-        placeholder="e.g. 'Done when fridge has 4+ days of meals, shopping done by Sunday'"></textarea>
-      <p class="modal-section-title">Assign to</p>
-      <div class="assign-row">
-        <button class="assign-btn p1" id="assign-p1-btn" onclick="setAssignee('p1')"></button>
-        <button class="assign-btn p2" id="assign-p2-btn" onclick="setAssignee('p2')"></button>
+  <!-- FAB: Add Card -->
+  <button class="fab" id="fab-add" onclick="openAddChooser()" aria-label="Add card">＋</button>
+
+  <!-- CARD DETAIL SHEET -->
+  <div class="sheet-overlay" id="modal-overlay" onclick="closeModalOutside(event)"></div>
+  <div class="sheet" id="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div id="modal-emoji" class="sheet-emoji"></div>
+    <h3 class="sheet-title" id="modal-title"></h3>
+    <p class="sheet-category" id="modal-category"></p>
+    <p class="sheet-section-title">What this card includes</p>
+    <div class="cpe-list" id="modal-cpe"></div>
+    <p class="sheet-section-title">Our standard for this card</p>
+    <textarea class="standard-textarea" id="modal-standard" rows="3"
+      placeholder="e.g. 'Done when fridge has 4+ days of meals, shopping done by Sunday'"></textarea>
+    <p class="sheet-section-title">Assign to</p>
+    <div class="assign-row">
+      <button class="assign-btn p1" id="assign-p1-btn" onclick="setAssignee('p1')"></button>
+      <button class="assign-btn p2" id="assign-p2-btn" onclick="setAssignee('p2')"></button>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="unassign-btn" id="unassign-btn" onclick="unassignCard()" style="display:none">Unassign</button>
+      <button class="btn-save" onclick="saveCard()">Save ✓</button>
+    </div>
+    <div class="sheet-danger-row">
+      <button class="btn-edit" onclick="editCardDetails()">Edit card details</button>
+      <button class="btn-danger" onclick="askRemoveCurrentCard()">Remove from bank</button>
+    </div>
+  </div>
+
+  <!-- ADD/EDIT CARD SHEET -->
+  <div class="sheet-overlay" id="add-card-overlay" onclick="closeAddCardOutside(event)"></div>
+  <div class="sheet" id="add-card-sheet">
+    <div class="sheet-handle"></div>
+    <input type="hidden" id="add-card-form-source" value="">
+    <h3 class="sheet-title" id="add-card-title" style="margin-bottom:.25rem;">Add a Card</h3>
+    <p id="add-card-desc" style="font-size:.875rem;color:var(--mid-gray);margin-bottom:1.5rem;">Create a custom task for your household.</p>
+    <div class="add-sheet-row">
+      <div>
+        <label class="add-sheet-label">Emoji</label>
+        <input class="emoji-input" type="text" id="new-card-emoji" value="📋" autocomplete="off"
+          onfocus="if(this.value==='📋')this.value=''"
+          onblur="if(!this.value.trim())this.value='📋'">
       </div>
-      <div class="modal-actions">
-        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-        <button class="unassign-btn" id="unassign-btn" onclick="unassignCard()" style="display:none">Remove</button>
-        <button class="btn-save" onclick="saveCard()">Save ✓</button>
+      <div style="flex:1;">
+        <label class="add-sheet-label">Card name *</label>
+        <input class="add-sheet-input" type="text" id="new-card-name" placeholder="e.g. Pet care" maxlength="40">
       </div>
+    </div>
+    <div class="add-sheet-field">
+      <label class="add-sheet-label">Category *</label>
+      <select id="new-card-category" onchange="handleCategoryChange()" class="add-sheet-input" style="cursor:pointer;"></select>
+      <input type="text" id="new-card-category-custom" placeholder="New category name" maxlength="30"
+        class="add-sheet-input" style="display:none;margin-top:.5rem;">
+    </div>
+    <div class="add-sheet-field">
+      <label class="add-sheet-label">CPE breakdown <span style="font-weight:300;text-transform:none;letter-spacing:0">(optional)</span></label>
+      <div style="display:flex;flex-direction:column;gap:.5rem;">
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <div class="cpe-letter">C</div>
+          <input type="text" id="new-cpe-c" placeholder="Conceive — notice the need" class="add-sheet-input" style="flex:1;">
+        </div>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <div class="cpe-letter">P</div>
+          <input type="text" id="new-cpe-p" placeholder="Plan — how & when" class="add-sheet-input" style="flex:1;">
+        </div>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <div class="cpe-letter">E</div>
+          <input type="text" id="new-cpe-e" placeholder="Execute — do it fully" class="add-sheet-input" style="flex:1;">
+        </div>
+      </div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" onclick="closeAddCardModal()">Cancel</button>
+      <button class="btn-save" id="add-card-save-btn" onclick="saveNewCard()">Add to bank ✓</button>
+    </div>
+  </div>
+
+  <!-- ADD CARD CHOOSER SHEET -->
+  <div class="sheet-overlay" id="add-chooser-overlay" onclick="closeAddChooserOutside(event)"></div>
+  <div class="sheet" id="add-chooser-sheet">
+    <div class="sheet-handle"></div>
+    <h3 class="sheet-title" style="margin-bottom:.25rem;">Add a card</h3>
+    <p style="font-size:.875rem;color:var(--mid-gray);margin-bottom:1.5rem;">How would you like to add it?</p>
+    <div class="add-choice-row">
+      <button class="add-choice-btn" onclick="goToLibraryPicker()">
+        <div class="add-choice-icon">📚</div>
+        <div class="add-choice-text">
+          <div class="add-choice-title">From the library</div>
+          <div class="add-choice-sub">Pick a premade card — edit any field before adding.</div>
+        </div>
+        <div class="add-choice-arrow">→</div>
+      </button>
+      <button class="add-choice-btn" onclick="goToCustomForm()">
+        <div class="add-choice-icon">✏️</div>
+        <div class="add-choice-text">
+          <div class="add-choice-title">Build a custom card</div>
+          <div class="add-choice-sub">Start from scratch with your own name & CPE.</div>
+        </div>
+        <div class="add-choice-arrow">→</div>
+      </button>
+    </div>
+    <div class="sheet-actions" style="margin-top:.25rem;">
+      <button class="btn-cancel" style="flex:1;" onclick="closeAddChooser()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- LIBRARY PICKER SHEET -->
+  <div class="sheet-overlay" id="library-overlay" onclick="closeLibraryOutside(event)"></div>
+  <div class="sheet" id="library-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header-row">
+      <button class="sheet-back-btn" onclick="backToAddChooser()" aria-label="Back">←</button>
+      <h3 class="sheet-title" style="margin:0;">From the library</h3>
+    </div>
+    <p style="font-size:.875rem;color:var(--mid-gray);margin-bottom:1rem;">
+      Tap to select. Pick as many as you'd like, then add them all at once.
+      <span class="library-selectall" id="library-selectall" onclick="toggleSelectAllVisible()">Select all</span>
+    </p>
+    <div class="filter-row" id="library-filter-row"></div>
+    <div class="library-grid" id="library-grid"></div>
+    <div class="library-footer" id="library-footer">
+      <span class="library-footer-clear" onclick="clearLibrarySelection()">Clear</span>
+      <button class="btn-save" id="library-add-btn" onclick="addSelectedFromLibrary()">Add to bank</button>
+    </div>
+  </div>
+
+  <!-- CONFIRM MODAL -->
+  <div class="confirm-overlay" id="confirm-overlay">
+    <div class="confirm-modal">
+      <h3 class="confirm-title" id="confirm-title">Are you sure?</h3>
+      <p class="confirm-body" id="confirm-body"></p>
+      <div class="confirm-actions">
+        <button class="btn-cancel" onclick="closeConfirm()">Cancel</button>
+        <button class="btn-confirm-danger" id="confirm-action-btn" onclick="runConfirm()">Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS SHEET -->
+  <div class="sheet-overlay" id="settings-overlay" onclick="closeSettingsOutside(event)"></div>
+  <div class="sheet" id="settings-sheet">
+    <div class="sheet-handle"></div>
+    <h3 class="sheet-title" style="margin-bottom:1.25rem;">Settings</h3>
+    <div class="settings-item">
+      <div>
+        <div class="settings-item-label">Players</div>
+        <div class="settings-players" id="settings-players"></div>
+      </div>
+    </div>
+    <div class="settings-item" onclick="closeSettings()" style="color:var(--mid-gray);">
+      <div>
+        <div class="settings-item-label">Close</div>
+      </div>
+      <span>↓</span>
+    </div>
+    <div class="settings-item" onclick="confirmReset()">
+      <div>
+        <div class="settings-item-label" style="color:#c0392b;">Reset all data</div>
+        <div class="settings-item-sub">Wipe all card assignments and activity</div>
+      </div>
+      <span style="color:var(--mid-gray);">→</span>
     </div>
   </div>
 
   <div class="toast" id="toast"></div>
 
-
   <script>
-    const CARDS = [
+    const LIBRARY = [
       { id: 1, name: "Meals (weekdays)", emoji: "🍳", category: "Home", cpe: ["Notice when meal plan runs out", "Plan weekly menu & shopping list", "Cook or prep weekday meals"] },
       { id: 2, name: "Meals (weekends)", emoji: "🥘", category: "Home", cpe: ["Decide weekend meal vibe", "Source ingredients or plan takeout", "Cook/order & serve meals"] },
       { id: 3, name: "Grocery shopping", emoji: "🛒", category: "Home", cpe: ["Track what's running low", "Write the full list", "Do the shop & put away"] },
@@ -1282,37 +1210,58 @@
       { id: 29, name: "Self-care", emoji: "🛁", category: "Wellbeing", cpe: ["Notice personal depletion", "Plan rest & recovery time", "Take the time you need"] },
       { id: 30, name: "Couple check-in", emoji: "💬", category: "Wellbeing", cpe: ["Notice relationship needs", "Schedule a check-in", "Talk honestly about the system"] },
     ];
-    const CATEGORIES = ["All", ...new Set(CARDS.map(c => c.category))];
 
     let me = null, p1name = '', p2name = '';
-    let sharedData = { p1: '', p2: '', cards: {}, activity: [] };
+    let sharedData = { p1: '', p2: '', cards: {}, activity: [], customCards: [] };
     let lastHash = '';
     let activeFilter = 'All';
     let editingCard = null, pendingOwner = null;
+    let editingFormCardId = null;
+    let libraryFilter = 'All';
+    let librarySelection = new Set();
+    let confirmCallback = null;
+
+    // ── HELPERS ──
+    function findCard(id) {
+      return (sharedData.customCards || []).find(c => String(c.id) === String(id));
+    }
+
+    function getActiveCards() {
+      return sharedData.customCards || [];
+    }
+
+    function escapeHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function escapeAttr(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function jsString(s) {
+      return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    }
 
     // ── API ──
-    async function apiGet() {
-      const r = await fetch('/api/data'); return r.json();
-    }
+    async function apiGet() { const r = await fetch('/api/data'); return r.json(); }
     async function apiSet(data) {
       await fetch('/api/data', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
     }
 
     function setSyncStatus(s) {
       const dot = document.getElementById('sync-dot');
-      const lbl = document.getElementById('sync-label');
       if (!dot) return;
       dot.className = 'sync-dot ' + (s === 'live' ? 'live' : s === 'syncing' ? 'syncing' : '');
-      lbl.textContent = s === 'live' ? 'live' : s === 'syncing' ? 'saving…' : 'offline';
     }
 
     // ── INIT ──
     async function init() {
       try {
         const data = await apiGet();
-        sharedData = data;
-        lastHash = JSON.stringify(data);
-        // Check localStorage for identity
+        sharedData = { customCards: [], ...data };
+        if (!Array.isArray(sharedData.customCards)) sharedData.customCards = [];
+        lastHash = JSON.stringify(sharedData);
         const saved = localStorage.getItem('fp-identity');
         if (saved) {
           const id = JSON.parse(saved);
@@ -1325,8 +1274,7 @@
           document.getElementById('step-1').classList.remove('active');
           document.getElementById('step-2').classList.add('active');
           document.getElementById('dot-2').classList.add('done');
-          buildIdentityPick();
-          return;
+          buildIdentityPick(); return;
         }
       } catch (e) { console.log('No server data yet'); }
       hideLoader(); show('welcome');
@@ -1348,6 +1296,7 @@
       sharedData.p1 = p1; sharedData.p2 = p2;
       if (!sharedData.cards) sharedData.cards = {};
       if (!sharedData.activity) sharedData.activity = [];
+      if (!sharedData.customCards) sharedData.customCards = [];
       await apiSet(sharedData);
       document.getElementById('step-1').classList.remove('active');
       document.getElementById('step-2').classList.add('active');
@@ -1355,41 +1304,15 @@
       buildIdentityPick();
     }
 
-
-    async function resetApp() {
-      const password = prompt('Enter reset password to wipe all data:');
-      if (!password) return;
-
-      const confirmed = confirm('This will permanently delete all card assignments and activity. Are you sure?');
-      if (!confirmed) return;
-
-      try {
-        const res = await fetch('/api/reset', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password })
-        });
-        const data = await res.json();
-        if (data.ok) {
-          alert('✅ Data reset. Reloading...');
-          window.location.reload();
-        } else {
-          alert('❌ Wrong password.');
-        }
-      } catch (e) {
-        alert('Error connecting to server.');
-      }
-    }
-
     function buildIdentityPick() {
       document.getElementById('identity-pick').innerHTML = [
         { key: 'p1', name: p1name, color: 'var(--p1-color)', bg: '#FDF3EE' },
         { key: 'p2', name: p2name, color: 'var(--p2-color)', bg: '#F0F3F8' },
       ].map(p => `<button class="identity-btn" onclick="pickIdentity('${p.key}')" style="background:${p.bg}">
-    <div class="identity-dot" style="background:${p.color}"></div>
-    <span class="identity-name" style="color:${p.color}">${p.name}</span>
-    <span style="margin-left:auto;font-size:.8rem;color:var(--mid-gray)">That's me →</span>
-  </button>`).join('');
+        <div class="identity-dot" style="background:${p.color}"></div>
+        <span class="identity-name" style="color:${p.color}">${p.name}</span>
+        <span style="margin-left:auto;font-size:.875rem;color:var(--mid-gray)">That's me →</span>
+      </button>`).join('');
     }
 
     function pickIdentity(who) {
@@ -1403,10 +1326,8 @@
     function launchApp() { bootApp(); }
 
     function bootApp() {
-      document.getElementById('header-p1').textContent = p1name;
-      document.getElementById('header-p2').textContent = p2name;
       updateAssignBtns();
-      renderFilters(); renderCards(); renderActivityBar();
+      renderFilters(); renderCards(); renderActivityLine();
       show('app'); startSync();
     }
 
@@ -1425,12 +1346,15 @@
           const fresh = await apiGet();
           const h = JSON.stringify(fresh);
           if (h !== lastHash) {
-            lastHash = h; sharedData = fresh; renderCards(); renderActivityBar();
+            lastHash = h;
+            sharedData = { customCards: [], ...fresh };
+            if (!Array.isArray(sharedData.customCards)) sharedData.customCards = [];
+            renderFilters(); renderCards(); renderActivityLine();
             const at = document.querySelector('.tab-content.active');
             if (at && at.id === 'tab-tracker') renderTracker();
             if (at && at.id === 'tab-rebalance') renderRebalance();
           }
-        } catch (e) { }
+        } catch (e) {}
       }, 4000);
     }
 
@@ -1442,81 +1366,108 @@
       sharedData.activity = sharedData.activity.slice(0, 10);
     }
 
-    function renderActivityBar() {
-      const bar = document.getElementById('activity-bar');
-      const acts = (sharedData.activity || []).slice(0, 3);
-      if (!acts.length) return;
-      bar.innerHTML = acts.map((a, i) => {
-        const col = a.who === p1name ? 'var(--p1-color)' : 'var(--p2-color)';
-        return `<div class="act-item" style="opacity:${1 - i * .3}">
-      <span class="act-who" style="color:${col}">${a.who}</span>
-      <span>${a.action}</span> <strong>${a.card}</strong>
-      <span style="color:var(--light-gray)">· ${timeAgo(a.time)}</span>
-      ${i < acts.length - 1 ? '<span style="color:var(--light-gray);margin:0 .25rem">·</span>' : ''}
-    </div>`;
-      }).join('');
+    function renderActivityLine() {
+      const line = document.getElementById('activity-line');
+      const acts = (sharedData.activity || []);
+      if (!acts.length) { line.innerHTML = '<span style="color:var(--light-gray);">No recent activity</span>'; return; }
+      const a = acts[0];
+      const col = a.who === p1name ? 'var(--p1-color)' : 'var(--p2-color)';
+      line.innerHTML = `<strong style="color:${col}">${a.who}</strong> ${a.action} <strong>${a.card}</strong> · <span style="color:var(--light-gray)">${timeAgo(a.time)}</span>`;
     }
 
     function timeAgo(ts) {
       const s = Math.floor((Date.now() - ts) / 1000);
-      if (s < 60) return 'just now'; if (s < 3600) return Math.floor(s / 60) + 'm ago';
+      if (s < 60) return 'just now';
+      if (s < 3600) return Math.floor(s / 60) + 'm ago';
       return Math.floor(s / 3600) + 'h ago';
     }
 
     // ── RENDER ──
     function renderFilters() {
-      document.getElementById('filter-row').innerHTML = CATEGORIES.map(c =>
-        `<button class="filter-chip ${c === 'All' ? 'active' : ''}" onclick="setFilter('${c}',this)">${c}</button>`
+      const pool = getActiveCards();
+      const cats = ['All', ...Array.from(new Set(pool.map(c => c.category)))];
+      if (!cats.includes(activeFilter)) activeFilter = 'All';
+      document.getElementById('filter-row').innerHTML = cats.map(c =>
+        `<button class="filter-chip ${c === activeFilter ? 'active' : ''}" onclick="setFilter('${jsString(c)}',this)">${escapeHtml(c)}</button>`
       ).join('');
+      const fab = document.getElementById('fab-add');
+      const onDealTab = document.getElementById('tab-deal').classList.contains('active');
+      if (fab) fab.classList.toggle('hidden', !onDealTab);
     }
 
     function setFilter(cat, el) {
       activeFilter = cat;
-      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-      el.classList.add('active'); renderCards();
+      document.querySelectorAll('#filter-row .filter-chip').forEach(c => c.classList.remove('active'));
+      if (el) el.classList.add('active');
+      renderCards();
     }
 
     function renderCards() {
-      const filtered = activeFilter === 'All' ? CARDS : CARDS.filter(c => c.category === activeFilter);
-      const asgn = filtered.filter(c => sharedData.cards[c.id]).length;
+      const pool = getActiveCards();
+      const filtered = activeFilter === 'All' ? pool : pool.filter(c => c.category === activeFilter);
       const dc = document.getElementById('deal-count');
-      if (dc) dc.textContent = `${asgn}/${filtered.length} assigned`;
+      if (dc) {
+        if (!pool.length) {
+          dc.textContent = '';
+        } else {
+          const asgn = filtered.filter(c => sharedData.cards[String(c.id)]).length;
+          dc.textContent = `${asgn}/${filtered.length} assigned`;
+        }
+      }
       const grid = document.getElementById('cards-grid');
       if (!grid) return;
+      if (!pool.length) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+          <div class="empty-state-icon">🃏</div>
+          <p>Your card bank is empty.<br>Tap <strong>+</strong> to add cards from the library or build your own.</p>
+        </div>`;
+        return;
+      }
+      if (!filtered.length) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+          <div class="empty-state-icon">🃏</div>
+          <p>No cards in this category.</p>
+        </div>`;
+        return;
+      }
       grid.innerHTML = filtered.map(card => {
-        const d = sharedData.cards[card.id];
+        const d = sharedData.cards[String(card.id)];
         let cls = '', badge = '';
         if (d) {
           cls = 'assigned-' + d.owner;
-          const init = d.owner === 'p1' ? p1name[0] : p2name[0];
+          const init = d.owner === 'p1' ? (p1name[0] || '?') : (p2name[0] || '?');
           const col = d.owner === 'p1' ? 'var(--p1-color)' : 'var(--p2-color)';
-          badge = `<div class="card-owner-badge" style="background:${col}">${init}</div>`;
+          badge = `<div class="card-owner-badge" style="background:${col}">${escapeHtml(init)}</div>`;
         }
-        return `<div class="card-item ${cls}" onclick="openCard(${card.id})">${badge}
-      <div class="card-emoji">${card.emoji}</div>
-      <div class="card-name">${card.name}</div>
-      <div class="card-category">${card.category}</div>
-    </div>`;
+        const safeId = jsString(card.id);
+        return `<div class="card-item ${cls}" onclick="openCard('${safeId}')">
+          <button class="card-remove-btn" onclick="event.stopPropagation();askRemoveCard('${safeId}')" aria-label="Remove card">×</button>
+          ${badge}
+          <div class="card-emoji">${escapeHtml(card.emoji)}</div>
+          <div class="card-name">${escapeHtml(card.name)}</div>
+        </div>`;
       }).join('');
     }
 
     function openCard(id) {
-      const card = CARDS.find(c => c.id === id);
+      const card = findCard(id);
+      if (!card) return;
       editingCard = id;
-      const d = sharedData.cards[id] || {};
+      const d = sharedData.cards[String(id)] || {};
       pendingOwner = d.owner || null;
+
       document.getElementById('modal-emoji').textContent = card.emoji;
       document.getElementById('modal-title').textContent = card.name;
       document.getElementById('modal-category').textContent = card.category;
       document.getElementById('modal-standard').value = d.standard || '';
-      document.getElementById('modal-cpe').innerHTML = card.cpe.map((item, i) =>
-        `<div class="cpe-item"><div class="cpe-letter">${['C', 'P', 'E'][i]}</div><div>${item}</div></div>`
+      document.getElementById('modal-cpe').innerHTML = (card.cpe || []).map((item, i) =>
+        `<div class="cpe-item"><div class="cpe-letter">${['C','P','E'][i]}</div><div>${escapeHtml(item)}</div></div>`
       ).join('');
       updateAssignBtns();
       document.getElementById('assign-p1-btn').classList.toggle('active', d.owner === 'p1');
       document.getElementById('assign-p2-btn').classList.toggle('active', d.owner === 'p2');
       document.getElementById('unassign-btn').style.display = d.owner ? 'block' : 'none';
-      document.getElementById('modal-overlay').classList.add('open');
+      openSheet('modal-overlay', 'modal-sheet');
     }
 
     function setAssignee(who) {
@@ -1527,109 +1478,497 @@
 
     async function saveCard() {
       const id = editingCard;
-      const card = CARDS.find(c => c.id === id);
+      const card = findCard(id);
+      if (!card) return;
       const standard = document.getElementById('modal-standard').value.trim();
-      const prev = sharedData.cards[id];
+      const prev = sharedData.cards[String(id)];
       if (pendingOwner) {
-        sharedData.cards[id] = { owner: pendingOwner, standard, changedBy: me === 'p1' ? p1name : p2name, changedAt: Date.now() };
+        sharedData.cards[String(id)] = { owner: pendingOwner, standard, changedBy: me === 'p1' ? p1name : p2name, changedAt: Date.now() };
         const ownerName = pendingOwner === 'p1' ? p1name : p2name;
         addActivity(prev ? (prev.owner !== pendingOwner ? `assigned to ${ownerName} →` : 'updated') : 'dealt', card.name);
-      } else if (prev) { delete sharedData.cards[id]; addActivity('removed', card.name); }
+      } else if (prev) { delete sharedData.cards[String(id)]; addActivity('removed', card.name); }
       closeModal();
       setSyncStatus('syncing');
       await apiSet(sharedData);
       lastHash = JSON.stringify(sharedData);
       setSyncStatus('live');
-      renderCards(); renderActivityBar();
+      renderCards(); renderActivityLine();
       showToast(pendingOwner ? "Card saved ✓" : "Card unassigned");
     }
 
     async function unassignCard() {
       const id = editingCard;
-      const card = CARDS.find(c => c.id === id);
-      delete sharedData.cards[id];
+      const card = findCard(id);
+      if (!card) return;
+      delete sharedData.cards[String(id)];
       addActivity('removed', card.name);
       closeModal();
       await apiSet(sharedData);
       lastHash = JSON.stringify(sharedData);
-      renderCards(); renderActivityBar();
+      renderCards(); renderActivityLine();
       showToast("Card unassigned");
     }
 
-    function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); editingCard = null; }
+    function askRemoveCard(id) {
+      const card = findCard(id);
+      if (!card) return;
+      showConfirm(
+        'Remove from bank?',
+        `"${card.name}" will be removed from your card bank. Any current assignment will be cleared.`,
+        'Remove',
+        () => removeCard(id)
+      );
+    }
+
+    function askRemoveCurrentCard() {
+      if (!editingCard) return;
+      const id = editingCard;
+      const card = findCard(id);
+      if (!card) return;
+      showConfirm(
+        'Remove from bank?',
+        `"${card.name}" will be removed from your card bank. Any current assignment will be cleared.`,
+        'Remove',
+        async () => { closeModal(); await removeCard(id); }
+      );
+    }
+
+    async function removeCard(id) {
+      const card = findCard(id);
+      if (!card) return;
+      const name = card.name;
+      sharedData.customCards = (sharedData.customCards || []).filter(c => String(c.id) !== String(id));
+      delete sharedData.cards[String(id)];
+      addActivity('removed from bank', name);
+      setSyncStatus('syncing');
+      await apiSet(sharedData);
+      lastHash = JSON.stringify(sharedData);
+      setSyncStatus('live');
+      renderFilters(); renderCards(); renderActivityLine();
+      showToast("Card removed");
+    }
+
+    function editCardDetails() {
+      if (!editingCard) return;
+      const card = findCard(editingCard);
+      if (!card) return;
+      const id = editingCard;
+      closeModal();
+      setTimeout(() => openAddCardModal({ editId: id, prefill: card }), 280);
+    }
+
+    function closeModal() { closeSheet('modal-overlay', 'modal-sheet'); editingCard = null; }
     function closeModalOutside(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
 
+    // ── CONFIRM MODAL ──
+    function showConfirm(title, body, actionLabel, callback) {
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-body').textContent = body;
+      document.getElementById('confirm-action-btn').textContent = actionLabel;
+      confirmCallback = callback;
+      document.getElementById('confirm-overlay').classList.add('open');
+    }
+    function closeConfirm() {
+      document.getElementById('confirm-overlay').classList.remove('open');
+      confirmCallback = null;
+    }
+    function runConfirm() {
+      const cb = confirmCallback;
+      closeConfirm();
+      if (cb) cb();
+    }
+
+    // ── ADD CARD CHOOSER ──
+    function openAddChooser() {
+      openSheet('add-chooser-overlay', 'add-chooser-sheet');
+    }
+    function closeAddChooser() {
+      closeSheet('add-chooser-overlay', 'add-chooser-sheet');
+    }
+    function closeAddChooserOutside(e) {
+      if (e.target === document.getElementById('add-chooser-overlay')) closeAddChooser();
+    }
+    function goToCustomForm() {
+      closeAddChooser();
+      setTimeout(() => openAddCardModal(), 280);
+    }
+    function goToLibraryPicker() {
+      closeAddChooser();
+      setTimeout(() => openLibraryPicker(), 280);
+    }
+
+    // ── LIBRARY PICKER ──
+    function openLibraryPicker() {
+      libraryFilter = 'All';
+      librarySelection = new Set();
+      renderLibraryPicker();
+      openSheet('library-overlay', 'library-sheet');
+    }
+    function closeLibraryPicker() {
+      closeSheet('library-overlay', 'library-sheet');
+    }
+    function closeLibraryOutside(e) {
+      if (e.target === document.getElementById('library-overlay')) closeLibraryPicker();
+    }
+    function backToAddChooser() {
+      closeLibraryPicker();
+      setTimeout(() => openAddChooser(), 280);
+    }
+    function setLibraryFilter(cat) {
+      libraryFilter = cat;
+      renderLibraryPicker();
+    }
+    function getVisibleLibraryCards() {
+      return libraryFilter === 'All' ? LIBRARY : LIBRARY.filter(c => c.category === libraryFilter);
+    }
+    function renderLibraryPicker() {
+      const cats = ['All', ...Array.from(new Set(LIBRARY.map(c => c.category)))];
+      document.getElementById('library-filter-row').innerHTML = cats.map(c =>
+        `<button class="filter-chip ${c === libraryFilter ? 'active' : ''}" onclick="setLibraryFilter('${jsString(c)}')">${escapeHtml(c)}</button>`
+      ).join('');
+      const cards = getVisibleLibraryCards();
+      const sources = new Set((sharedData.customCards || []).map(c => c.sourceId).filter(v => v != null).map(String));
+      document.getElementById('library-grid').innerHTML = cards.map(card => {
+        const idStr = String(card.id);
+        const added = sources.has(idStr);
+        const selected = librarySelection.has(idStr);
+        const cls = ['library-card', added ? 'already-added' : '', selected ? 'selected' : ''].filter(Boolean).join(' ');
+        return `<div class="${cls}" onclick="toggleLibrarySelect(${card.id})">
+          ${selected ? '<div class="library-check">✓</div>' : (added ? '<div class="library-added-tag">In bank</div>' : '')}
+          <div class="library-card-emoji">${escapeHtml(card.emoji)}</div>
+          <div class="library-card-name">${escapeHtml(card.name)}</div>
+          <div class="library-card-cat">${escapeHtml(card.category)}</div>
+        </div>`;
+      }).join('');
+      renderLibraryFooter();
+      renderLibrarySelectAllLink();
+    }
+    function renderLibraryFooter() {
+      const count = librarySelection.size;
+      const footer = document.getElementById('library-footer');
+      const btn = document.getElementById('library-add-btn');
+      if (!footer) return;
+      footer.classList.toggle('open', count > 0);
+      if (btn) btn.textContent = count === 1 ? 'Add 1 card to bank ✓' : `Add ${count} cards to bank ✓`;
+    }
+    function renderLibrarySelectAllLink() {
+      const link = document.getElementById('library-selectall');
+      if (!link) return;
+      const visible = getVisibleLibraryCards();
+      const allSelected = visible.length > 0 && visible.every(c => librarySelection.has(String(c.id)));
+      link.textContent = allSelected ? 'Deselect all' : 'Select all';
+    }
+    function toggleLibrarySelect(id) {
+      const idStr = String(id);
+      if (librarySelection.has(idStr)) librarySelection.delete(idStr);
+      else librarySelection.add(idStr);
+      renderLibraryPicker();
+    }
+    function clearLibrarySelection() {
+      librarySelection.clear();
+      renderLibraryPicker();
+    }
+    function toggleSelectAllVisible() {
+      const visible = getVisibleLibraryCards();
+      const allSelected = visible.length > 0 && visible.every(c => librarySelection.has(String(c.id)));
+      if (allSelected) {
+        visible.forEach(c => librarySelection.delete(String(c.id)));
+      } else {
+        visible.forEach(c => librarySelection.add(String(c.id)));
+      }
+      renderLibraryPicker();
+    }
+    async function addSelectedFromLibrary() {
+      if (!librarySelection.size) return;
+      if (!sharedData.customCards) sharedData.customCards = [];
+      const baseTime = Date.now();
+      let added = 0;
+      const names = [];
+      for (const idStr of librarySelection) {
+        const lib = LIBRARY.find(c => String(c.id) === idStr);
+        if (!lib) continue;
+        const newCard = {
+          id: 'c_' + (baseTime + added),
+          name: lib.name,
+          emoji: lib.emoji,
+          category: lib.category,
+          cpe: lib.cpe.slice(),
+          sourceId: lib.id
+        };
+        sharedData.customCards.push(newCard);
+        names.push(lib.name);
+        added++;
+      }
+      if (!added) return;
+      if (added === 1) {
+        addActivity('added to bank', names[0]);
+      } else {
+        const preview = names.slice(0, 2).join(', ');
+        const more = added > 2 ? `, +${added - 2} more` : '';
+        addActivity('added to bank', `${added} cards (${preview}${more})`);
+      }
+      librarySelection.clear();
+      closeLibraryPicker();
+      setSyncStatus('syncing');
+      await apiSet(sharedData);
+      lastHash = JSON.stringify(sharedData);
+      setSyncStatus('live');
+      renderFilters(); renderCards(); renderActivityLine();
+      showToast(added === 1 ? 'Card added ✓' : `${added} cards added ✓`);
+    }
+
+    // ── ADD / EDIT CARD SHEET ──
+    function openAddCardModal(opts) {
+      opts = opts || {};
+      editingFormCardId = opts.editId || null;
+      const sourceId = opts.sourceId != null ? opts.sourceId : '';
+      const prefill = opts.prefill || {};
+      const isEdit = !!editingFormCardId;
+      const isFromLibrary = !isEdit && sourceId !== '';
+
+      document.getElementById('add-card-form-source').value = String(sourceId);
+      document.getElementById('add-card-title').textContent =
+        isEdit ? 'Edit card' : (isFromLibrary ? 'Add from library' : 'Build a custom card');
+      document.getElementById('add-card-desc').textContent =
+        isEdit ? "Update this card's details — changes apply everywhere it's used."
+              : (isFromLibrary ? 'Edit any field, then save to add it to your bank.'
+                              : 'Create a custom task for your household.');
+      document.getElementById('add-card-save-btn').textContent =
+        isEdit ? 'Save changes ✓' : 'Add to bank ✓';
+
+      const existingCats = Array.from(new Set([
+        ...getActiveCards().map(c => c.category),
+        ...LIBRARY.map(c => c.category)
+      ]));
+      const selectedCat = prefill.category || existingCats[0] || '';
+      if (selectedCat && !existingCats.includes(selectedCat)) existingCats.unshift(selectedCat);
+      const sel = document.getElementById('new-card-category');
+      sel.innerHTML = existingCats.map(c =>
+        `<option value="${escapeAttr(c)}"${c === selectedCat ? ' selected' : ''}>${escapeHtml(c)}</option>`
+      ).join('') + `<option value="__new__">+ New category…</option>`;
+
+      document.getElementById('new-card-category-custom').style.display = 'none';
+      document.getElementById('new-card-category-custom').value = '';
+      document.getElementById('new-card-emoji').value = prefill.emoji || '📋';
+      document.getElementById('new-card-name').value = prefill.name || '';
+      document.getElementById('new-cpe-c').value = (prefill.cpe && prefill.cpe[0]) || '';
+      document.getElementById('new-cpe-p').value = (prefill.cpe && prefill.cpe[1]) || '';
+      document.getElementById('new-cpe-e').value = (prefill.cpe && prefill.cpe[2]) || '';
+      openSheet('add-card-overlay', 'add-card-sheet');
+    }
+
+    function closeAddCardModal() {
+      closeSheet('add-card-overlay', 'add-card-sheet');
+      editingFormCardId = null;
+    }
+    function closeAddCardOutside(e) { if (e.target === document.getElementById('add-card-overlay')) closeAddCardModal(); }
+
+    function handleCategoryChange() {
+      const val = document.getElementById('new-card-category').value;
+      document.getElementById('new-card-category-custom').style.display = val === '__new__' ? 'block' : 'none';
+    }
+
+    async function saveNewCard() {
+      const emoji = document.getElementById('new-card-emoji').value.trim() || '📋';
+      const name = document.getElementById('new-card-name').value.trim();
+      let category = document.getElementById('new-card-category').value;
+      if (category === '__new__') category = document.getElementById('new-card-category-custom').value.trim();
+      if (!name) { showToast("Please enter a card name"); return; }
+      if (!category) { showToast("Please enter a category name"); return; }
+      const cpe = [
+        document.getElementById('new-cpe-c').value.trim() || 'Notice the need',
+        document.getElementById('new-cpe-p').value.trim() || 'Plan how & when',
+        document.getElementById('new-cpe-e').value.trim() || 'Execute fully',
+      ];
+      const sourceIdRaw = document.getElementById('add-card-form-source').value;
+      if (!sharedData.customCards) sharedData.customCards = [];
+
+      const isEdit = !!editingFormCardId;
+      if (isEdit) {
+        const existing = sharedData.customCards.find(c => String(c.id) === String(editingFormCardId));
+        if (existing) {
+          existing.name = name;
+          existing.emoji = emoji;
+          existing.category = category;
+          existing.cpe = cpe;
+        }
+        addActivity('updated', name);
+      } else {
+        const newCard = { id: 'c_' + Date.now(), name, emoji, category, cpe };
+        if (sourceIdRaw !== '') {
+          const n = Number(sourceIdRaw);
+          newCard.sourceId = Number.isFinite(n) ? n : sourceIdRaw;
+        }
+        sharedData.customCards.push(newCard);
+        addActivity('added to bank', name);
+      }
+
+      closeAddCardModal();
+      setSyncStatus('syncing');
+      await apiSet(sharedData);
+      lastHash = JSON.stringify(sharedData);
+      setSyncStatus('live');
+      renderFilters(); renderCards(); renderActivityLine();
+      showToast(isEdit ? "Card updated ✓" : "Card added ✓");
+    }
+
+    // ── SETTINGS SHEET ──
+    function openSettings() {
+      const sp = document.getElementById('settings-players');
+      if (sp) {
+        sp.innerHTML = [
+          { name: p1name, color: 'var(--p1-color)', bg: '#FDF3EE', me: me === 'p1' },
+          { name: p2name, color: 'var(--p2-color)', bg: '#F0F3F8', me: me === 'p2' },
+        ].map(p => `<div class="settings-player-chip" style="background:${p.bg}">
+          <div class="settings-player-dot" style="background:${p.color}"></div>
+          <span style="color:${p.color};font-size:.82rem;font-weight:500;">${p.name}${p.me ? ' (you)' : ''}</span>
+        </div>`).join('');
+      }
+      openSheet('settings-overlay', 'settings-sheet');
+    }
+    function closeSettings() { closeSheet('settings-overlay', 'settings-sheet'); }
+    function closeSettingsOutside(e) { if (e.target === document.getElementById('settings-overlay')) closeSettings(); }
+
+    async function confirmReset() {
+      closeSettings();
+      const password = prompt('Enter reset password to wipe all data:');
+      if (!password) return;
+      const confirmed = confirm('This will permanently delete all card assignments and activity. Are you sure?');
+      if (!confirmed) return;
+      try {
+        const res = await fetch('/api/reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        const data = await res.json();
+        if (data.ok) { alert('✅ Data reset. Reloading...'); window.location.reload(); }
+        else { alert('❌ Wrong password.'); }
+      } catch (e) { alert('Error connecting to server.'); }
+    }
+
+    // ── TRACKER ──
     function renderTracker() {
-      const assigned = Object.entries(sharedData.cards || {});
+      const assigned = Object.entries(sharedData.cards || {}).filter(([id]) => !!findCard(id));
       const p1c = assigned.filter(([, d]) => d.owner === 'p1');
       const p2c = assigned.filter(([, d]) => d.owner === 'p2');
       const total = assigned.length || 1;
-      document.getElementById('tracker-summary').innerHTML = `
-    <div class="summary-card"><div class="summary-player" style="color:var(--p1-color)">${p1name}</div><div class="summary-count" style="color:var(--p1-color)">${p1c.length}</div><div class="summary-label">cards owned</div></div>
-    <div class="summary-card"><div class="summary-player" style="color:var(--p2-color)">${p2name}</div><div class="summary-count" style="color:var(--p2-color)">${p2c.length}</div><div class="summary-label">cards owned</div></div>`;
+      document.getElementById('tracker-players').innerHTML = `
+        <div class="tracker-player-card">
+          <div>
+            <div class="tracker-player-name" style="color:var(--p1-color)">${p1name}</div>
+            <div class="tracker-player-count" style="color:var(--p1-color)">${p1c.length}</div>
+            <div class="tracker-player-label">cards owned</div>
+          </div>
+        </div>
+        <div class="tracker-player-card">
+          <div>
+            <div class="tracker-player-name" style="color:var(--p2-color)">${p2name}</div>
+            <div class="tracker-player-count" style="color:var(--p2-color)">${p2c.length}</div>
+            <div class="tracker-player-label">cards owned</div>
+          </div>
+        </div>`;
       const pct = Math.round((p1c.length / total) * 100);
       document.getElementById('balance-fill').style.width = pct + '%';
       document.getElementById('balance-p1-label').textContent = p1name + ' ' + pct + '%';
       document.getElementById('balance-p2-label').textContent = (100 - pct) + '% ' + p2name;
-      if (!assigned.length) { document.getElementById('tracker-list').innerHTML = `<div class="empty-state"><div class="empty-state-icon">🃏</div><p>No cards dealt yet.</p></div>`; return; }
+      if (!assigned.length) {
+        document.getElementById('tracker-list').innerHTML = `<div class="empty-state"><div class="empty-state-icon">🃏</div><p>No cards dealt yet.</p></div>`;
+        return;
+      }
       document.getElementById('tracker-list').innerHTML = assigned.map(([id, d]) => {
-        const card = CARDS.find(c => c.id === +id); if (!card) return '';
+        const card = findCard(id); if (!card) return '';
         const name = d.owner === 'p1' ? p1name : p2name;
         const col = d.owner === 'p1' ? 'var(--p1-color)' : 'var(--p2-color)';
         return `<div class="tracker-item">
-      <div class="tracker-emoji">${card.emoji}</div>
-      <div class="tracker-info"><div class="tracker-name">${card.name}</div><div class="tracker-cat">${card.category}</div>
-      ${d.standard ? `<div class="tracker-standard">"${d.standard}"</div>` : ''}
-      ${d.changedBy ? `<div class="tracker-changed-by">Last updated by ${d.changedBy} · ${timeAgo(d.changedAt)}</div>` : ''}
-      </div><div class="tracker-owner" style="background:${col}">${name[0]}</div>
-    </div>`;
+          <div class="tracker-emoji">${card.emoji}</div>
+          <div class="tracker-info">
+            <div class="tracker-name">${card.name}</div>
+            <div class="tracker-cat">${card.category}</div>
+            ${d.standard ? `<div class="tracker-standard">"${d.standard}"</div>` : ''}
+            ${d.changedBy ? `<div class="tracker-changed-by">Updated by ${d.changedBy} · ${timeAgo(d.changedAt)}</div>` : ''}
+          </div>
+          <div class="tracker-owner" style="background:${col}">${name[0]}</div>
+        </div>`;
       }).join('');
     }
 
+    // ── REBALANCE ──
     function renderRebalance() {
-      const assigned = Object.entries(sharedData.cards || {});
-      if (!assigned.length) { document.getElementById('rebalance-grid').innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚖️</div><p>No cards dealt yet.</p></div>`; return; }
+      const assigned = Object.entries(sharedData.cards || {}).filter(([id]) => !!findCard(id));
+      if (!assigned.length) {
+        document.getElementById('rebalance-grid').innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚖️</div><p>No cards dealt yet.</p></div>`;
+        return;
+      }
       document.getElementById('rebalance-grid').innerHTML = assigned.map(([id, d]) => {
-        const card = CARDS.find(c => c.id === +id); if (!card) return '';
+        const card = findCard(id); if (!card) return '';
         const name = d.owner === 'p1' ? p1name : p2name;
         const other = d.owner === 'p1' ? p2name : p1name;
         const col = d.owner === 'p1' ? 'var(--p1-color)' : 'var(--p2-color)';
         return `<div class="rebalance-item">
-      <div class="rebalance-emoji">${card.emoji}</div>
-      <div class="rebalance-info"><div class="rebalance-name">${card.name}</div><div class="rebalance-assigned" style="color:${col}">→ ${name}</div></div>
-      <button class="swap-btn" onclick="swapCard(${id})">Give to ${other}</button>
-    </div>`;
+          <div class="rebalance-emoji">${card.emoji}</div>
+          <div class="rebalance-info">
+            <div class="rebalance-name">${card.name}</div>
+            <div class="rebalance-assigned" style="color:${col}">→ ${name}</div>
+          </div>
+          <button class="swap-btn" onclick="swapCard('${id}')">→ ${other}</button>
+        </div>`;
       }).join('');
     }
 
     async function swapCard(id) {
-      if (!sharedData.cards[id]) return;
-      const card = CARDS.find(c => c.id === +id);
-      const prev = sharedData.cards[id].owner;
-      sharedData.cards[id].owner = prev === 'p1' ? 'p2' : 'p1';
-      sharedData.cards[id].changedBy = me === 'p1' ? p1name : p2name;
-      sharedData.cards[id].changedAt = Date.now();
-      const newOwner = sharedData.cards[id].owner === 'p1' ? p1name : p2name;
+      if (!sharedData.cards[String(id)]) return;
+      const card = findCard(id); if (!card) return;
+      const prev = sharedData.cards[String(id)].owner;
+      sharedData.cards[String(id)].owner = prev === 'p1' ? 'p2' : 'p1';
+      sharedData.cards[String(id)].changedBy = me === 'p1' ? p1name : p2name;
+      sharedData.cards[String(id)].changedAt = Date.now();
+      const newOwner = sharedData.cards[String(id)].owner === 'p1' ? p1name : p2name;
       addActivity(`swapped to ${newOwner}`, card.name);
       await apiSet(sharedData);
       lastHash = JSON.stringify(sharedData);
-      renderRebalance(); renderCards(); renderActivityBar();
+      renderRebalance(); renderCards(); renderActivityLine();
       showToast("Card swapped ✓");
     }
 
+    // ── TAB SWITCHING ──
     function switchTab(name, el) {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-      document.getElementById('tab-' + name).classList.add('active'); el.classList.add('active');
+      document.getElementById('tab-' + name).classList.add('active');
+      el.classList.add('active');
+      const fab = document.getElementById('fab-add');
+      if (fab) fab.classList.toggle('hidden', name !== 'deal');
       if (name === 'tracker') renderTracker();
       if (name === 'rebalance') renderRebalance();
     }
 
-    function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-    function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
+    // ── SHEET HELPERS ──
+    function openSheet(overlayId, sheetId) {
+      document.getElementById(overlayId).classList.add('open');
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          document.getElementById(sheetId).classList.add('open');
+        });
+      });
+    }
+    function closeSheet(overlayId, sheetId) {
+      document.getElementById(sheetId).classList.remove('open');
+      document.getElementById(overlayId).classList.remove('open');
+    }
+
+    function show(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
 
     init();
   </script>
 </body>
-
 </html>

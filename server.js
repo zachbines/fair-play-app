@@ -12,7 +12,7 @@ const DATA_FILE = path.join(DATA_DIR, 'data.json');
 // Reset password — change this to something only you know
 const RESET_PASSWORD = process.env.RESET_PASSWORD || 'tz-reset';
 
-const EMPTY_DATA = { p1: '', p2: '', cards: {}, activity: [] };
+const EMPTY_DATA = { p1: '', p2: '', cards: {}, activity: [], customCards: [] };
 
 // Init data file if missing
 if (!fs.existsSync(DATA_FILE)) {
