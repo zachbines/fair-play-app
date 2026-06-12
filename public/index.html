@@ -827,6 +827,180 @@
     }
     .btn-edit:active { background: var(--cream); }
 
+    /* ── REMINDER UI ── */
+    .reminder-section {
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--sand);
+    }
+    .reminder-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: .65rem;
+    }
+    .reminder-header .sheet-section-title {
+      margin: 0; padding: 0;
+    }
+    .reminder-toggle {
+      position: relative;
+      display: inline-block;
+      width: 42px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+    .reminder-toggle input { opacity: 0; width: 0; height: 0; }
+    .reminder-toggle .slider {
+      position: absolute; inset: 0;
+      background: var(--light-gray);
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .reminder-toggle .slider::before {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      left: 3px; top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: transform .22s cubic-bezier(.4,1.4,.6,1);
+      box-shadow: 0 1px 3px rgba(0,0,0,.18);
+    }
+    .reminder-toggle input:checked + .slider { background: var(--terracotta); }
+    .reminder-toggle input:checked + .slider::before { transform: translateX(18px); }
+
+    .reminder-freq-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: .4rem;
+      margin-bottom: .85rem;
+    }
+    .reminder-freq-btn {
+      padding: .55rem .25rem;
+      border: 1.5px solid var(--sand);
+      background: white;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .85rem;
+      color: var(--charcoal);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .reminder-freq-btn.active {
+      background: var(--charcoal);
+      color: white;
+      border-color: var(--charcoal);
+    }
+    .reminder-weekday-row {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: .3rem;
+      margin-bottom: .85rem;
+    }
+    .reminder-day-btn {
+      padding: .45rem .15rem;
+      border: 1.5px solid var(--sand);
+      background: white;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .72rem;
+      color: var(--charcoal);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .reminder-day-btn.active {
+      background: var(--charcoal);
+      color: white;
+      border-color: var(--charcoal);
+    }
+    .reminder-time-row {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-top: .25rem;
+    }
+    .reminder-time-row label {
+      font-size: .85rem;
+      color: var(--mid-gray);
+      flex-shrink: 0;
+    }
+    .reminder-time-row input[type="time"] {
+      flex: 1;
+      border: 1.5px solid var(--sand);
+      border-radius: 10px;
+      padding: .65rem .8rem;
+      background: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--charcoal);
+      outline: none;
+    }
+    .reminder-time-row input[type="time"]:focus { border-color: var(--terracotta); }
+    .reminder-monthday-row {
+      margin-bottom: .85rem;
+    }
+    .reminder-monthday-row label {
+      display: block;
+      font-size: .78rem;
+      color: var(--mid-gray);
+      margin-bottom: .35rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .reminder-monthday-row select {
+      width: 100%;
+      border: 1.5px solid var(--sand);
+      border-radius: 10px;
+      padding: .65rem .8rem;
+      background: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--charcoal);
+      outline: none;
+    }
+    .reminder-tz-warning {
+      font-size: .7rem;
+      color: var(--mid-gray);
+      margin-top: .5rem;
+      line-height: 1.4;
+    }
+
+    /* Bell badge on card tile */
+    .card-bell-badge {
+      position: absolute;
+      top: 8px;
+      right: 36px;
+      font-size: 13px;
+      line-height: 22px;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,.15));
+    }
+
+    /* Tracker reminder summary line */
+    .tracker-reminder {
+      font-size: .75rem;
+      color: var(--terracotta);
+      margin-top: .25rem;
+      display: flex;
+      align-items: center;
+      gap: .3rem;
+    }
+
+    /* Notifications settings block */
+    .notif-form > div { margin-bottom: .65rem; }
+    .notif-form .add-sheet-label { display: block; margin-bottom: .3rem; }
+    .notif-test-btn {
+      background: white;
+      border: 1.5px solid var(--sand);
+      border-radius: 8px;
+      padding: .35rem .7rem;
+      font-size: .72rem;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--charcoal);
+      cursor: pointer;
+      margin-top: .3rem;
+    }
+    .notif-test-btn:hover { background: var(--cream); }
+    .notif-test-btn:active { background: var(--charcoal); color: white; border-color: var(--charcoal); }
+
     /* ─────────────────────────── DESKTOP ─────────────────────────── */
     @media (min-width: 720px) {
       /* Cap main content width so cards & lists don't stretch edge-to-edge */
@@ -1093,6 +1267,43 @@
       <button class="assign-btn p1" id="assign-p1-btn" onclick="setAssignee('p1')"></button>
       <button class="assign-btn p2" id="assign-p2-btn" onclick="setAssignee('p2')"></button>
     </div>
+
+    <!-- Reminder section: only shown when an owner is selected -->
+    <div class="reminder-section" id="modal-reminder-section" style="display:none;">
+      <div class="reminder-header">
+        <p class="sheet-section-title" style="margin:0;">Reminder</p>
+        <label class="reminder-toggle">
+          <input type="checkbox" id="reminder-enabled" onchange="onReminderToggle()">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div id="reminder-controls" style="display:none;">
+        <div class="reminder-freq-row">
+          <button type="button" class="reminder-freq-btn" data-freq="daily" onclick="setReminderFreq('daily')">Daily</button>
+          <button type="button" class="reminder-freq-btn" data-freq="weekly" onclick="setReminderFreq('weekly')">Weekly</button>
+          <button type="button" class="reminder-freq-btn" data-freq="monthly" onclick="setReminderFreq('monthly')">Monthly</button>
+        </div>
+        <div class="reminder-weekday-row" id="reminder-weekday-row" style="display:none;">
+          <button type="button" class="reminder-day-btn" data-day="monday"    onclick="setReminderDow('monday')">Mon</button>
+          <button type="button" class="reminder-day-btn" data-day="tuesday"   onclick="setReminderDow('tuesday')">Tue</button>
+          <button type="button" class="reminder-day-btn" data-day="wednesday" onclick="setReminderDow('wednesday')">Wed</button>
+          <button type="button" class="reminder-day-btn" data-day="thursday"  onclick="setReminderDow('thursday')">Thu</button>
+          <button type="button" class="reminder-day-btn" data-day="friday"    onclick="setReminderDow('friday')">Fri</button>
+          <button type="button" class="reminder-day-btn" data-day="saturday"  onclick="setReminderDow('saturday')">Sat</button>
+          <button type="button" class="reminder-day-btn" data-day="sunday"    onclick="setReminderDow('sunday')">Sun</button>
+        </div>
+        <div class="reminder-monthday-row" id="reminder-monthday-row" style="display:none;">
+          <label for="reminder-dom">Day of month</label>
+          <select id="reminder-dom"></select>
+        </div>
+        <div class="reminder-time-row">
+          <label for="reminder-time">Time</label>
+          <input type="time" id="reminder-time" value="09:00">
+        </div>
+        <p class="reminder-tz-warning" id="reminder-tz-warning"></p>
+      </div>
+    </div>
+
     <div class="sheet-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="unassign-btn" id="unassign-btn" onclick="unassignCard()" style="display:none">Unassign</button>
@@ -1244,6 +1455,42 @@
         </div>
       </div>
     </div>
+    <div class="settings-item" style="display:block;">
+      <div id="settings-notifs-view" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="startEditNotifs()">
+        <div>
+          <div class="settings-item-label">Notifications</div>
+          <div class="settings-item-sub" id="settings-notifs-summary">Tap to set up Pushcut webhooks</div>
+        </div>
+        <span style="color:var(--mid-gray);font-size:.85rem;">Edit ✎</span>
+      </div>
+      <div id="settings-notifs-edit" style="display:none;" class="notif-form">
+        <div class="settings-item-label" style="margin-bottom:.6rem;">Pushcut webhooks</div>
+        <p style="font-size:.78rem;color:var(--mid-gray);line-height:1.5;margin-bottom:.85rem;">
+          In Pushcut → Notifications → New Notification, copy the webhook URL for each phone.
+        </p>
+        <div>
+          <label class="add-sheet-label" id="notif-p1-label">Webhook for partner 1</label>
+          <input type="url" id="notif-p1-webhook" class="add-sheet-input" placeholder="https://api.pushcut.io/…">
+          <button type="button" class="notif-test-btn" onclick="sendTestWebhook('p1')">Send test notification</button>
+        </div>
+        <div>
+          <label class="add-sheet-label" id="notif-p2-label">Webhook for partner 2</label>
+          <input type="url" id="notif-p2-webhook" class="add-sheet-input" placeholder="https://api.pushcut.io/…">
+          <button type="button" class="notif-test-btn" onclick="sendTestWebhook('p2')">Send test notification</button>
+        </div>
+        <div>
+          <label class="add-sheet-label">Timezone</label>
+          <input type="text" id="notif-tz" class="add-sheet-input" placeholder="e.g. America/New_York" autocomplete="off">
+          <p style="font-size:.7rem;color:var(--mid-gray);margin-top:.3rem;line-height:1.4;">
+            IANA timezone name. Reminders fire at this zone's wall-clock time. Defaults to UTC.
+          </p>
+        </div>
+        <div style="display:flex;gap:.5rem;margin-top:.85rem;">
+          <button class="btn-cancel" onclick="cancelEditNotifs()" style="flex:1;">Cancel</button>
+          <button class="btn-save" onclick="saveNotifs()" style="flex:1;">Save ✓</button>
+        </div>
+      </div>
+    </div>
     <div class="settings-item" onclick="closeSettings()" style="color:var(--mid-gray);">
       <div>
         <div class="settings-item-label">Close</div>
@@ -1304,6 +1551,11 @@
     let libraryFilter = 'All';
     let librarySelection = new Set();
     let confirmCallback = null;
+
+    // Reminder editor state — mirrors what's shown in the card modal
+    let editingReminder = { enabled: false, frequency: 'daily', dayOfWeek: 'monday', dayOfMonth: 1, time: '09:00', lastFired: null };
+    // Cache of the latest /api/settings response (webhooks + timezone), used by the Settings sheet
+    let notifSettings = { p1Webhook: '', p2Webhook: '', timezone: 'UTC' };
 
     // ── HELPERS ──
     function findCard(id) {
@@ -1413,6 +1665,8 @@
       updateAssignBtns();
       renderFilters(); renderCards(); renderActivityLine();
       show('app'); startSync();
+      // Pull notification settings (timezone is shown inside the reminder editor)
+      fetchNotifSettings().catch(() => {});
     }
 
     function updateAssignBtns() {
@@ -1525,21 +1779,53 @@
       }
       grid.innerHTML = filtered.map(card => {
         const d = sharedData.cards[String(card.id)];
-        let cls = '', badge = '';
+        let cls = '', badge = '', bell = '';
         if (d) {
           cls = 'assigned-' + d.owner;
           const init = d.owner === 'p1' ? (p1name[0] || '?') : (p2name[0] || '?');
           const col = d.owner === 'p1' ? 'var(--p1-color)' : 'var(--p2-color)';
           badge = `<div class="card-owner-badge" style="background:${col}">${escapeHtml(init)}</div>`;
+          if (d.reminders && d.reminders.enabled) {
+            bell = `<div class="card-bell-badge" aria-label="Reminder set">🔔</div>`;
+          }
         }
         return `<div class="card-item ${cls}" data-card-id="${escapeAttr(card.id)}">
           <button class="card-remove-btn" data-card-action="remove" aria-label="Remove card">×</button>
+          ${bell}
           ${badge}
           <div class="card-emoji">${escapeHtml(card.emoji)}</div>
           <div class="card-name">${escapeHtml(card.name)}</div>
         </div>`;
       }).join('');
       attachCardGridListeners();
+    }
+
+    // ── REMINDER SUMMARY (display in tracker + elsewhere) ──
+    const DAY_DISPLAY = {
+      monday:'Monday', tuesday:'Tuesday', wednesday:'Wednesday',
+      thursday:'Thursday', friday:'Friday', saturday:'Saturday', sunday:'Sunday'
+    };
+    function ordinal(n) {
+      const s = ['th','st','nd','rd'];
+      const v = n % 100;
+      return n + (s[(v - 20) % 10] || s[v] || s[0]);
+    }
+    function formatReminderTime(t) {
+      if (!t) return '';
+      const [h, m] = t.split(':').map(Number);
+      if (Number.isNaN(h)) return t;
+      const period = h >= 12 ? 'pm' : 'am';
+      const hr12 = ((h + 11) % 12) + 1;
+      const minStr = String(m).padStart(2, '0');
+      return `${hr12}:${minStr}${period}`;
+    }
+    function describeReminder(r) {
+      if (!r || !r.enabled) return '';
+      const time = formatReminderTime(r.time);
+      if (r.frequency === 'daily')   return `Daily · ${time}`;
+      if (r.frequency === 'weekly')  return `Weekly · ${DAY_DISPLAY[r.dayOfWeek] || r.dayOfWeek} · ${time}`;
+      if (r.frequency === 'monthly') return `Monthly · ${ordinal(r.dayOfMonth)} · ${time}`;
+      return '';
     }
 
     // ── CARD GRID INTERACTION (click + long-press) ──
@@ -1628,6 +1914,8 @@
       document.getElementById('assign-p1-btn').classList.toggle('active', d.owner === 'p1');
       document.getElementById('assign-p2-btn').classList.toggle('active', d.owner === 'p2');
       document.getElementById('unassign-btn').style.display = d.owner ? 'block' : 'none';
+      loadReminderIntoForm(d.reminders);
+      updateReminderSectionVisibility();
       openSheet('modal-overlay', 'modal-sheet');
     }
 
@@ -1635,6 +1923,12 @@
       pendingOwner = pendingOwner === who ? null : who;
       document.getElementById('assign-p1-btn').classList.toggle('active', pendingOwner === 'p1');
       document.getElementById('assign-p2-btn').classList.toggle('active', pendingOwner === 'p2');
+      updateReminderSectionVisibility();
+    }
+
+    function updateReminderSectionVisibility() {
+      const sec = document.getElementById('modal-reminder-section');
+      if (sec) sec.style.display = pendingOwner ? 'block' : 'none';
     }
 
     async function saveCard() {
@@ -1644,7 +1938,22 @@
       const standard = document.getElementById('modal-standard').value.trim();
       const prev = sharedData.cards[String(id)];
       if (pendingOwner) {
-        sharedData.cards[String(id)] = { owner: pendingOwner, standard, changedBy: me === 'p1' ? p1name : p2name, changedAt: Date.now() };
+        const reminders = buildRemindersFromForm();
+        // Preserve lastFired across saves when the schedule didn't change
+        if (prev && prev.reminders && prev.reminders.lastFired && reminders) {
+          const sameSchedule = prev.reminders.frequency === reminders.frequency
+            && prev.reminders.dayOfWeek === reminders.dayOfWeek
+            && prev.reminders.dayOfMonth === reminders.dayOfMonth
+            && prev.reminders.time === reminders.time;
+          if (sameSchedule) reminders.lastFired = prev.reminders.lastFired;
+        }
+        sharedData.cards[String(id)] = {
+          owner: pendingOwner,
+          standard,
+          changedBy: me === 'p1' ? p1name : p2name,
+          changedAt: Date.now(),
+          reminders,
+        };
         const ownerName = pendingOwner === 'p1' ? p1name : p2name;
         addActivity(prev ? (prev.owner !== pendingOwner ? `assigned to ${ownerName} →` : 'updated') : 'dealt', card.name);
       } else if (prev) { delete sharedData.cards[String(id)]; addActivity('removed', card.name); }
@@ -1655,6 +1964,73 @@
       setSyncStatus('live');
       renderCards(); renderActivityLine();
       showToast(pendingOwner ? "Card saved ✓" : "Card unassigned");
+    }
+
+    // ── REMINDER EDITOR ──
+    const REMINDER_DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+
+    function loadReminderIntoForm(r) {
+      const safe = {
+        enabled: !!(r && r.enabled),
+        frequency: (r && r.frequency) || 'daily',
+        dayOfWeek: (r && r.dayOfWeek) || 'monday',
+        dayOfMonth: (r && r.dayOfMonth) || 1,
+        time: (r && r.time) || '09:00',
+        lastFired: (r && r.lastFired) || null,
+      };
+      editingReminder = safe;
+      document.getElementById('reminder-enabled').checked = safe.enabled;
+      document.getElementById('reminder-time').value = safe.time;
+      // Build month-day dropdown once
+      const dom = document.getElementById('reminder-dom');
+      if (dom && !dom.options.length) {
+        let opts = '';
+        for (let i = 1; i <= 28; i++) opts += `<option value="${i}">${i}</option>`;
+        dom.innerHTML = opts;
+      }
+      if (dom) dom.value = String(safe.dayOfMonth);
+      setReminderFreq(safe.frequency, true);
+      setReminderDow(safe.dayOfWeek, true);
+      document.getElementById('reminder-controls').style.display = safe.enabled ? 'block' : 'none';
+      const warn = document.getElementById('reminder-tz-warning');
+      if (warn) warn.textContent = `Fires at ${notifSettings.timezone || 'UTC'} wall-clock time`;
+    }
+
+    function onReminderToggle() {
+      const enabled = document.getElementById('reminder-enabled').checked;
+      editingReminder.enabled = enabled;
+      document.getElementById('reminder-controls').style.display = enabled ? 'block' : 'none';
+    }
+
+    function setReminderFreq(freq, skipState) {
+      if (!skipState) editingReminder.frequency = freq;
+      document.querySelectorAll('.reminder-freq-btn').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-freq') === freq);
+      });
+      document.getElementById('reminder-weekday-row').style.display  = freq === 'weekly'  ? 'grid'  : 'none';
+      document.getElementById('reminder-monthday-row').style.display = freq === 'monthly' ? 'block' : 'none';
+    }
+
+    function setReminderDow(day, skipState) {
+      if (!skipState) editingReminder.dayOfWeek = day;
+      document.querySelectorAll('.reminder-day-btn').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-day') === day);
+      });
+    }
+
+    function buildRemindersFromForm() {
+      const enabled = document.getElementById('reminder-enabled').checked;
+      const time = document.getElementById('reminder-time').value || '09:00';
+      const domEl = document.getElementById('reminder-dom');
+      const dayOfMonth = domEl && domEl.value ? parseInt(domEl.value, 10) : (editingReminder.dayOfMonth || 1);
+      return {
+        enabled,
+        frequency: editingReminder.frequency || 'daily',
+        dayOfWeek: editingReminder.dayOfWeek || 'monday',
+        dayOfMonth: Math.min(Math.max(dayOfMonth, 1), 28),
+        time,
+        lastFired: null,
+      };
     }
 
     async function unassignCard() {
@@ -1991,10 +2367,115 @@
     function openSettings() {
       renderSettingsPlayers();
       cancelRenamePlayers();
+      cancelEditNotifs();
+      refreshNotifSummary();
+      // Lazily refresh notif settings from server every open
+      fetchNotifSettings().catch(() => {});
       openSheet('settings-overlay', 'settings-sheet');
     }
     function closeSettings() { closeSheet('settings-overlay', 'settings-sheet'); }
     function closeSettingsOutside(e) { if (e.target === document.getElementById('settings-overlay')) closeSettings(); }
+
+    // ── NOTIFICATION SETTINGS ──
+    async function fetchNotifSettings() {
+      const res = await fetch('/api/settings');
+      if (!res.ok) return;
+      const s = await res.json();
+      notifSettings = {
+        p1Webhook: s.p1Webhook || '',
+        p2Webhook: s.p2Webhook || '',
+        timezone:  s.timezone  || 'UTC',
+      };
+      refreshNotifSummary();
+    }
+
+    function refreshNotifSummary() {
+      const summary = document.getElementById('settings-notifs-summary');
+      if (!summary) return;
+      const have1 = !!notifSettings.p1Webhook;
+      const have2 = !!notifSettings.p2Webhook;
+      if (have1 && have2) {
+        summary.textContent = `Connected for both partners · ${notifSettings.timezone}`;
+      } else if (have1 || have2) {
+        const who = have1 ? p1name : p2name;
+        summary.textContent = `Only ${who} connected · ${notifSettings.timezone}`;
+      } else {
+        summary.textContent = 'Tap to set up Pushcut webhooks';
+      }
+      // Refresh labels with current player names
+      const lbl1 = document.getElementById('notif-p1-label');
+      const lbl2 = document.getElementById('notif-p2-label');
+      if (lbl1) lbl1.textContent = `Webhook for ${p1name || 'partner 1'}`;
+      if (lbl2) lbl2.textContent = `Webhook for ${p2name || 'partner 2'}`;
+    }
+
+    function startEditNotifs() {
+      document.getElementById('notif-p1-webhook').value = notifSettings.p1Webhook || '';
+      document.getElementById('notif-p2-webhook').value = notifSettings.p2Webhook || '';
+      document.getElementById('notif-tz').value = notifSettings.timezone || 'UTC';
+      document.getElementById('settings-notifs-view').style.display = 'none';
+      document.getElementById('settings-notifs-edit').style.display = 'block';
+    }
+
+    function cancelEditNotifs() {
+      const view = document.getElementById('settings-notifs-view');
+      const edit = document.getElementById('settings-notifs-edit');
+      if (edit) edit.style.display = 'none';
+      if (view) view.style.display = 'flex';
+    }
+
+    async function saveNotifs() {
+      const payload = {
+        p1Webhook: document.getElementById('notif-p1-webhook').value.trim(),
+        p2Webhook: document.getElementById('notif-p2-webhook').value.trim(),
+        timezone:  document.getElementById('notif-tz').value.trim() || 'UTC',
+      };
+      try {
+        const res = await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) { showToast('Save failed'); return; }
+        notifSettings = payload;
+        cancelEditNotifs();
+        refreshNotifSummary();
+        showToast('Notifications saved ✓');
+      } catch (e) {
+        showToast('Save failed');
+      }
+    }
+
+    async function sendTestWebhook(who) {
+      // Save first (so the server-side fire-webhook uses the current input value)
+      const currentField = document.getElementById(who === 'p1' ? 'notif-p1-webhook' : 'notif-p2-webhook').value.trim();
+      const payload = {
+        p1Webhook: document.getElementById('notif-p1-webhook').value.trim(),
+        p2Webhook: document.getElementById('notif-p2-webhook').value.trim(),
+        timezone:  document.getElementById('notif-tz').value.trim() || 'UTC',
+      };
+      if (!currentField) { showToast('Paste a webhook URL first'); return; }
+      try {
+        await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const res = await fetch('/api/test-webhook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ who }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok) {
+          showToast('Test sent ✓');
+        } else {
+          showToast('Test failed — check URL');
+        }
+      } catch (e) {
+        showToast('Test failed');
+      }
+    }
 
     function startRenamePlayers() {
       document.getElementById('rename-p1').value = p1name;
@@ -2087,6 +2568,7 @@
         const card = findCard(id); if (!card) return '';
         const name = d.owner === 'p1' ? p1name : p2name;
         const col = d.owner === 'p1' ? 'var(--p1-color)' : 'var(--p2-color)';
+        const reminderText = describeReminder(d.reminders);
         return `<div class="tracker-item">
           <div class="tracker-emoji">${card.emoji}</div>
           <div class="tracker-info">
@@ -2094,6 +2576,7 @@
             <div class="tracker-cat">${card.category}</div>
             ${d.standard ? `<div class="tracker-standard">"${d.standard}"</div>` : ''}
             ${d.changedBy ? `<div class="tracker-changed-by">Updated by ${d.changedBy} · ${timeAgo(d.changedAt)}</div>` : ''}
+            ${reminderText ? `<div class="tracker-reminder">🔔 ${reminderText}</div>` : ''}
           </div>
           <div class="tracker-owner" style="background:${col}">${name[0]}</div>
         </div>`;

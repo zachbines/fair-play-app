@@ -12,7 +12,7 @@ const DATA_FILE = path.join(DATA_DIR, 'data.json');
 // Reset password — change this to something only you know
 const RESET_PASSWORD = 'reset';
 
-const EMPTY_DATA = { p1: '', p2: '', cards: {}, activity: [], customCards: [] };
+const EMPTY_DATA = { p1: '', p2: '', cards: {}, activity: [], customCards: [], settings: {} };
 
 // Init data file if missing
 if (!fs.existsSync(DATA_FILE)) {
@@ -39,7 +39,16 @@ function serveFile(res, filePath, contentType) {
   });
 }
 
-const server = http.createServer((req, res) => {
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => { try { resolve(body ? JSON.parse(body) : {}); } catch (e) { reject(e); } });
+    req.on('error', reject);
+  });
+}
+
+const server = http.createServer(async (req, res) => {
   const parsed = url.parse(req.url, true);
   const pathname = parsed.pathname;
 
@@ -71,6 +80,66 @@ const server = http.createServer((req, res) => {
         res.end('Bad request');
       }
     });
+    return;
+  }
+
+  // API: GET /api/settings — webhook URLs + timezone
+  if (pathname === '/api/settings' && req.method === 'GET') {
+    const data = readData();
+    const settings = data.settings || {};
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      p1Webhook: settings.p1Webhook || '',
+      p2Webhook: settings.p2Webhook || '',
+      timezone: settings.timezone || 'UTC',
+    }));
+    return;
+  }
+
+  // API: POST /api/settings
+  if (pathname === '/api/settings' && req.method === 'POST') {
+    try {
+      const incoming = await readBody(req);
+      const data = readData();
+      data.settings = {
+        ...(data.settings || {}),
+        p1Webhook: typeof incoming.p1Webhook === 'string' ? incoming.p1Webhook.trim() : (data.settings?.p1Webhook || ''),
+        p2Webhook: typeof incoming.p2Webhook === 'string' ? incoming.p2Webhook.trim() : (data.settings?.p2Webhook || ''),
+        timezone:  typeof incoming.timezone  === 'string' ? incoming.timezone.trim()  : (data.settings?.timezone  || 'UTC'),
+      };
+      if (!data.settings.timezone) data.settings.timezone = 'UTC';
+      writeData(data);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: true }));
+    } catch (e) {
+      res.writeHead(400);
+      res.end('Bad request');
+    }
+    return;
+  }
+
+  // API: POST /api/test-webhook — fires a test push to one of the configured webhooks
+  if (pathname === '/api/test-webhook' && req.method === 'POST') {
+    try {
+      const { who } = await readBody(req);
+      const data = readData();
+      const url = who === 'p1' ? data.settings?.p1Webhook : data.settings?.p2Webhook;
+      if (!url) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'No webhook configured for that partner' }));
+        return;
+      }
+      const ok = await postWebhook(url, {
+        title: 'Fair Play',
+        text: '🔔 Test notification — your webhook is working',
+        sound: 'default',
+      });
+      res.writeHead(ok ? 200 : 502, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok }));
+    } catch (e) {
+      res.writeHead(400);
+      res.end('Bad request');
+    }
     return;
   }
 
@@ -115,4 +184,175 @@ server.listen(PORT, () => {
   console.log(`\n✅ Fair Play is running at http://localhost:${PORT}`);
   console.log(`   Data stored at: ${DATA_FILE}`);
   console.log(`   Reset password: ${RESET_PASSWORD}\n`);
+  startReminderScheduler();
 });
+
+
+// ─────────────────────────────────────────────────────────────────────
+//  Reminder scheduler
+// ─────────────────────────────────────────────────────────────────────
+//  Runs once a minute, aligned to the minute boundary. Plain Node — no
+//  cron dependency. Compares "now" against each card's reminder rule in
+//  the user-configured timezone and POSTs to Pushcut on match.
+
+const FIRE_WINDOW_MINUTES = 10;  // if we miss a tick, we can still fire up to 10 min late
+
+// Build "current time" parts in the configured timezone.
+function nowInTimezone(tz) {
+  const tzSafe = tz || 'UTC';
+  try {
+    const fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: tzSafe,
+      hour12: false,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit',
+      weekday: 'long',
+    });
+    const parts = fmt.formatToParts(new Date());
+    const get = (type) => parts.find(p => p.type === type)?.value;
+    let hour = get('hour');
+    if (hour === '24') hour = '00'; // some impls report 24 for midnight
+    return {
+      time: `${hour}:${get('minute')}`,
+      day: (get('weekday') || '').toLowerCase(),
+      dayOfMonth: parseInt(get('day'), 10),
+      dateKey: `${get('year')}-${get('month')}-${get('day')}`,
+      monthKey: `${get('year')}-${get('month')}`,
+      tz: tzSafe,
+    };
+  } catch (e) {
+    // Bad timezone string — fall back silently to UTC
+    if (tzSafe !== 'UTC') return nowInTimezone('UTC');
+    throw e;
+  }
+}
+
+function dateKeyInTz(ts, tz) {
+  if (!ts) return null;
+  try {
+    const fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz || 'UTC',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+    });
+    const parts = fmt.formatToParts(new Date(ts));
+    const get = (type) => parts.find(p => p.type === type)?.value;
+    return `${get('year')}-${get('month')}-${get('day')}`;
+  } catch (e) { return null; }
+}
+
+function monthKeyInTz(ts, tz) {
+  if (!ts) return null;
+  try {
+    const fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz || 'UTC',
+      year: 'numeric', month: '2-digit',
+    });
+    const parts = fmt.formatToParts(new Date(ts));
+    const get = (type) => parts.find(p => p.type === type)?.value;
+    return `${get('year')}-${get('month')}`;
+  } catch (e) { return null; }
+}
+
+function timeToMinutes(t) {
+  if (!t || typeof t !== 'string') return -1;
+  const [h, m] = t.split(':').map(Number);
+  if (Number.isNaN(h) || Number.isNaN(m)) return -1;
+  return h * 60 + m;
+}
+
+// True if scheduled time has just passed within the firing window
+function withinFiringWindow(scheduledTime, currentTime) {
+  const sched = timeToMinutes(scheduledTime);
+  const now = timeToMinutes(currentTime);
+  if (sched < 0 || now < 0) return false;
+  const delta = now - sched;
+  return delta >= 0 && delta < FIRE_WINDOW_MINUTES;
+}
+
+async function postWebhook(webhookUrl, payload) {
+  try {
+    const res = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      console.error(`Webhook ${maskWebhook(webhookUrl)} returned ${res.status}`);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error(`Webhook ${maskWebhook(webhookUrl)} failed:`, e.message);
+    return false;
+  }
+}
+
+function maskWebhook(u) {
+  if (!u) return '(none)';
+  return u.length > 40 ? u.slice(0, 30) + '…' + u.slice(-6) : u;
+}
+
+async function checkAndFireReminders() {
+  const data = readData();
+  const tz = data.settings?.timezone || 'UTC';
+  const now = nowInTimezone(tz);
+
+  const cards = data.cards || {};
+  for (const cardId of Object.keys(cards)) {
+    const card = cards[cardId];
+    if (!card || !card.reminders || !card.reminders.enabled) continue;
+    if (!card.owner) continue;
+
+    const webhookUrl = card.owner === 'p1'
+      ? data.settings?.p1Webhook
+      : data.settings?.p2Webhook;
+    if (!webhookUrl) continue;
+
+    const r = card.reminders;
+    if (!withinFiringWindow(r.time, now.time)) continue;
+
+    let shouldFire = false;
+    if (r.frequency === 'daily') {
+      shouldFire = dateKeyInTz(r.lastFired, tz) !== now.dateKey;
+    } else if (r.frequency === 'weekly') {
+      shouldFire = now.day === r.dayOfWeek && dateKeyInTz(r.lastFired, tz) !== now.dateKey;
+    } else if (r.frequency === 'monthly') {
+      const targetDom = Math.min(Math.max(parseInt(r.dayOfMonth, 10) || 1, 1), 28);
+      shouldFire = now.dayOfMonth === targetDom && monthKeyInTz(r.lastFired, tz) !== now.monthKey;
+    }
+    if (!shouldFire) continue;
+
+    const customCard = (data.customCards || []).find(c => String(c.id) === String(cardId));
+    const cardName = customCard?.name || 'Task';
+    const cardEmoji = customCard?.emoji || '🔔';
+
+    console.log(`⏰ Firing reminder for "${cardName}" → ${card.owner} (${maskWebhook(webhookUrl)})`);
+    const ok = await postWebhook(webhookUrl, {
+      title: 'Fair Play',
+      text: `${cardEmoji} ${cardName} is due today`,
+      sound: 'default',
+    });
+    if (!ok) continue;  // leave lastFired untouched so we retry next tick
+
+    // Re-read just before write to minimize race with concurrent /api/data POSTs
+    const fresh = readData();
+    if (fresh.cards && fresh.cards[cardId] && fresh.cards[cardId].reminders) {
+      fresh.cards[cardId].reminders.lastFired = Date.now();
+      writeData(fresh);
+    }
+  }
+}
+
+function startReminderScheduler() {
+  const msUntilNextMinute = 60_000 - (Date.now() % 60_000);
+  console.log(`⏰ Reminder scheduler armed (first tick in ${Math.round(msUntilNextMinute / 1000)}s)`);
+  setTimeout(() => {
+    runTick();
+    setInterval(runTick, 60_000);
+  }, msUntilNextMinute);
+}
+
+async function runTick() {
+  try { await checkAndFireReminders(); }
+  catch (e) { console.error('Reminder tick failed:', e); }
+}

@@ -12,6 +12,7 @@ A live-synced home management app for two partners, based on the Fair Play Metho
 - Activity feed showing who changed what and when
 - Rebalance tab for your monthly check-in conversations
 - Hover any card to reveal an × and remove it from the bank (with confirmation)
+- **Optional push reminders via Pushcut** — schedule a daily / weekly / monthly nudge on any assigned card; the server fires a webhook at the right time and Pushcut delivers a native iOS push to the card's owner
 
 ---
 
@@ -94,6 +95,33 @@ The server reads/writes `/data/data.json` if a `/data` directory exists (e.g. a 
 ### Resetting
 
 In the app, **⋯ → Reset all data** wipes everything back to empty. It requires the reset password — set in `server.js` (`const RESET_PASSWORD = '…'`).
+
+---
+
+## Push notification reminders (optional)
+
+Each assigned card can carry a reminder rule. The server checks once a minute, and when the schedule matches it POSTs to a per-partner Pushcut webhook — Pushcut then delivers a real iOS push.
+
+### One-time Pushcut setup (per phone)
+
+1. Install [Pushcut](https://www.pushcut.io) on each iPhone
+2. Open Pushcut → **Notifications** → tap **+** → name it something like "FairPlay"
+3. Tap the new notification → copy the **Webhook URL**
+4. Repeat on the second phone
+
+### In Fair Play
+
+1. Open **⋯ → Settings → Notifications → Edit**
+2. Paste each partner's webhook URL into their field
+3. Set the **Timezone** field (an IANA name like `America/New_York`, `Europe/London`, or `Australia/Sydney`) — reminders fire at that zone's wall-clock time. Defaults to UTC, which is what Railway uses by default.
+4. Tap **Send test notification** for each phone to confirm the webhook works
+5. Save
+
+### Per-card reminders
+
+Open any assigned card → flip the **Reminder** toggle and pick **Daily / Weekly / Monthly**, a time, and (for weekly/monthly) which day. Save the card. A 🔔 appears on the card tile and a "Daily · 9:00am" line shows up in the **Tracker** tab.
+
+The server is resilient to short outages: if a reminder's scheduled minute is missed, it fires up to ~10 minutes later. After firing, `lastFired` is persisted immediately so a restart can't cause a duplicate.
 
 ---
 
