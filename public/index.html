@@ -1262,37 +1262,504 @@
   <div class="toast" id="toast"></div>
 
   <script>
+    // Canonical 101-card library from the Fair Play deck (Eve Rodsky).
+    // CPE values are taken verbatim from the source CSV where possible. Wild-suit
+    // cards (life-changing scenarios) don't have planning/execution in the source,
+    // so they get scenario-specific Conception + a shared "ask for help / lean on
+    // your village" Planning & Execution that reflects the Wild concept.
+    const WILD_PLANNING  = `Ask your partner for guilt-free additional help while you handle this.`;
+    const WILD_EXECUTION = `Reach out to your village for support. Consider removing other cards from your deck temporarily.`;
+
     const LIBRARY = [
-      { id: 1, name: "Meals (weekdays)", emoji: "🍳", category: "Home", cpe: ["Notice when meal plan runs out", "Plan weekly menu & shopping list", "Cook or prep weekday meals"] },
-      { id: 2, name: "Meals (weekends)", emoji: "🥘", category: "Home", cpe: ["Decide weekend meal vibe", "Source ingredients or plan takeout", "Cook/order & serve meals"] },
-      { id: 3, name: "Grocery shopping", emoji: "🛒", category: "Home", cpe: ["Track what's running low", "Write the full list", "Do the shop & put away"] },
-      { id: 4, name: "Laundry", emoji: "👕", category: "Home", cpe: ["Notice when laundry needs doing", "Sort & schedule washes", "Wash, dry, fold & put away"] },
-      { id: 5, name: "Tidying & declutter", emoji: "🧹", category: "Home", cpe: ["Notice mess & clutter buildup", "Decide what to tackle", "Tidy and put things away"] },
-      { id: 6, name: "Deep cleaning", emoji: "🫧", category: "Home", cpe: ["Know cleaning schedule", "Organise supplies & timing", "Clean bathrooms, floors, surfaces"] },
-      { id: 7, name: "Dishes & kitchen", emoji: "🍽️", category: "Home", cpe: ["Notice when kitchen needs attention", "Plan dish rotation", "Wash up & wipe down kitchen"] },
-      { id: 8, name: "Home repairs", emoji: "🔧", category: "Home", cpe: ["Notice & log what's broken", "Research fix or book tradesperson", "Fix it or manage the repair"] },
-      { id: 9, name: "Bills & finances", emoji: "💳", category: "Home", cpe: ["Track bills & due dates", "Review budget & spending", "Pay bills, manage accounts"] },
-      { id: 10, name: "Home admin", emoji: "📄", category: "Home", cpe: ["Know what paperwork is pending", "Organise documents & renewals", "File, submit, renew"] },
-      { id: 11, name: "Morning routine", emoji: "☀️", category: "Kids", cpe: ["Know wake times & schedule", "Prepare clothes/bag night before", "Wake, dress, feed & get out door"] },
-      { id: 12, name: "Bedtime routine", emoji: "🌙", category: "Kids", cpe: ["Know bedtime needs & schedule", "Set up bath/books/routine", "Bath, stories, settle to sleep"] },
-      { id: 13, name: "Feeding (day)", emoji: "🥣", category: "Kids", cpe: ["Know dietary needs & schedule", "Prep ingredients & snacks", "Prepare & serve all meals/snacks"] },
-      { id: 14, name: "Childcare logistics", emoji: "🏡", category: "Kids", cpe: ["Track childcare schedule & gaps", "Book, communicate with carers", "Drop-off, pick-up, payment"] },
-      { id: 15, name: "Doctor & health", emoji: "🩺", category: "Kids", cpe: ["Track health needs & checkups", "Book appointments", "Attend & follow up on care"] },
-      { id: 16, name: "Playdates", emoji: "👶", category: "Kids", cpe: ["Notice social needs", "Plan & coordinate with other families", "Host or transport to playdate"] },
-      { id: 17, name: "Activities & classes", emoji: "🎨", category: "Kids", cpe: ["Research suitable activities", "Book, manage schedule & fees", "Transport & attend with child"] },
-      { id: 18, name: "Emotional support", emoji: "🫶", category: "Kids", cpe: ["Notice child's emotional state", "Think through how to respond", "Be present & support child"] },
-      { id: 19, name: "Toys & supplies", emoji: "🧸", category: "Kids", cpe: ["Track what's needed/outgrown", "Research & order", "Buy, organise & maintain"] },
-      { id: 20, name: "Sleep support", emoji: "😴", category: "Kids", cpe: ["Know sleep patterns & needs", "Plan sleep approach", "Handle night waking & settling"] },
-      { id: 21, name: "Social planning", emoji: "🗓️", category: "Out", cpe: ["Track social obligations & desires", "Plan dates, events, visits", "Book, confirm & manage attendance"] },
-      { id: 22, name: "Gifts & cards", emoji: "🎁", category: "Out", cpe: ["Track birthdays & events", "Choose thoughtful gifts", "Buy, wrap & send on time"] },
-      { id: 23, name: "Travel planning", emoji: "✈️", category: "Out", cpe: ["Know upcoming travel needs", "Research & book transport/stays", "Manage packing & logistics"] },
-      { id: 24, name: "Family visits", emoji: "👨‍👩‍👧", category: "Out", cpe: ["Track when family is due/wants visit", "Plan visit timing & arrangements", "Host or travel & manage visit"] },
-      { id: 25, name: "Date nights", emoji: "💑", category: "Out", cpe: ["Prioritise couple time", "Plan date & book babysitter", "Execute the plan"] },
-      { id: 26, name: "Exercise & movement", emoji: "🏃", category: "Wellbeing", cpe: ["Prioritise physical health", "Schedule workouts", "Show up & do the work"] },
-      { id: 27, name: "Mental health check-ins", emoji: "🧠", category: "Wellbeing", cpe: ["Notice emotional load levels", "Plan check-in conversations", "Have honest conversation together"] },
-      { id: 28, name: "Unicorn Space", emoji: "🦄", category: "Wellbeing", cpe: ["Know what brings you alive", "Protect time for it", "Actually do it — no guilt"] },
-      { id: 29, name: "Self-care", emoji: "🛁", category: "Wellbeing", cpe: ["Notice personal depletion", "Plan rest & recovery time", "Take the time you need"] },
-      { id: 30, name: "Couple check-in", emoji: "💬", category: "Wellbeing", cpe: ["Notice relationship needs", "Schedule a check-in", "Talk honestly about the system"] },
+      // ── HOME ──
+      { id: 1,  name: "Auto", emoji: "🚗", category: "Home", cpe: [
+        `We have a car`,
+        `Researching cars to lease or buy (for budget, functionality, safety, look). Scheduling maintenance (tire maintenance, oil, tune-ups, certain mile inspections). Researching auto insurance (consult with "Home Insurance" cardholder about a bundle).`,
+        `Renewing DMV registration. Cleaning (inside and out). Managing inspections. Filling gas tank. Purchasing auto insurance and renewals.`
+      ]},
+      { id: 2,  name: "Calendar Keeper", emoji: "📅", category: "Home", cpe: [
+        `Events need to be managed`,
+        `Researching how to keep a shared/joint calendar option or app. Pick a shared calendar option. Conversations, coordinating, tracking invitations with other cardholders.`,
+        `Adding/deleting appointments. Creating kids' schedules for helpers with the "Childcare Helpers" cardholder.`
+      ]},
+      { id: 3,  name: "Cash & Bills", emoji: "💸", category: "Home", cpe: [
+        `Bills need to be paid`,
+        `Set up auto-pay and/or reminders.`,
+        `Withdrawing cash for the week. Paying all bills and vendor invoices (auto-pay/electronic, Venmo, checks, cash). Balancing checkbook. Doling out children's allowance.`
+      ]},
+      { id: 4,  name: "Cleaning", emoji: "🧹", category: "Home", cpe: [
+        `The house needs to be clean`,
+        `INSOURCED: Communicating with "Home Goods & Supplies" cardholder for supplies. OUTSOURCED: Sourcing, communicating with "Home Goods & Supplies" cardholder for supplies, scheduling, interviewing.`,
+        `Hiring. Ongoing communication & supervision. Making payments. DAILY/WEEKLY: Bed making, counter-top cleaning, vacuuming floors/carpets/couches, bathroom toilet cleaning/floor mopping, bathtub/shower tile and glass. OCCASIONAL: Carpets/floor, drapes, dusting, toys, window washing, defrosting refrigerator/freezer, outdoor grill/barbecue/furniture, upholstery.`
+      ]},
+      { id: 5,  name: "Dishes", emoji: "🍽️", category: "Home", cpe: [
+        `Dishes are being used, and therefore need to be cleaned`,
+        `Paying special care to specialty items like non-stick and cast-iron items.`,
+        `Washing and drying dishes and pots and pans (by hand). Loading and unloading dishwasher. Putting dishes away in proper location.`
+      ]},
+      { id: 6,  name: "Dry Cleaning", emoji: "🧺", category: "Home", cpe: [
+        `Certain clothes need to be dry cleaned`,
+        `Researching appropriate dry cleaner for pricing, location, and hours. Setting up account at dry cleaner for payment. Scheduling pick-up/drop-off or doing in-store. Taking inventory of pieces dropped off.`,
+        `Purchasing dry-cleaning bin/bag and making sure appropriate clothes are in it. Tagging pants/shirts with stains. Ensuring matching pieces picked up. Taking off plastic wrapping and placing clothes in closet.`
+      ]},
+      { id: 7,  name: "Electronics & IT", emoji: "💻", category: "Home", cpe: [
+        `Electronics need to be managed`,
+        `Researching electronics: TV, laptops/computers, tablets/e-readers, video game systems/VR, headphones, speakers, cell phones, smartwatches, home theater/audio, chargers/cords, home phones. Researching and arranging Wi-Fi installation. Researching password managers.`,
+        `Purchasing electronics. Installation/management of electronics and cable/satellite TV. Troubleshooting and software updating. Managing subscriptions and login info. Deleting/managing DVR shows. Wi-Fi/router maintenance. Saving data (USB/cloud).`
+      ]},
+      { id: 8,  name: "Estate Planning & Life Insurance", emoji: "📜", category: "Home", cpe: [
+        `Estate Planning & Life Insurance is needed`,
+        `Researching attorney/insurance agent or online service. Selecting and informing childcare custodian. Researching appropriate life insurance (term, whole life, etc.). Researching appropriate disability insurance.`,
+        `Meeting with attorney to set plan or filling out forms online regarding will/trust, power of attorney, healthcare directive, guardianship designation. Purchasing insurance policy.`
+      ]},
+      { id: 9,  name: "Garbage", emoji: "🗑️", category: "Home", cpe: [
+        `Things will be thrown away, meaning you will have garbage`,
+        `Applying to the city/municipality for garbage bins. Taking note of garbage day.`,
+        `Placing/replacing bag in home trash can. Removing full garbage bags. Placing them in trash chute/outdoor bins. Labeling bins. Taking bins back out/in. Checking bins for overflow trash and keeping bins clean.`
+      ]},
+      { id: 10, name: "Groceries", emoji: "🛒", category: "Home", cpe: [
+        `Your family needs to eat`,
+        `Making a master list (consulting with "Meals" cardholder). Checking refrigerator and pantry for what is low and adding to list.`,
+        `Shopping (in store and/or online). Loading and unloading groceries. Placing items in pantry/refrigerator. Throwing away expired items.`
+      ]},
+      { id: 11, name: "Health Insurance", emoji: "🏥", category: "Home", cpe: [
+        `The family needs health insurance`,
+        `Determining health insurance options (work, exchange, etc.). Researching plans (HMO, PPO, etc.) to confirm doctors, specialists, prescriptions, special needs are covered. Establishing flexible spending plan/health savings account if appropriate.`,
+        `Selecting and enrolling in plan during open enrollment. Fighting for coverage/reimbursement from medical providers. Giving checks to "Money Manager" cardholder for deposit. Checking whether deductible is being met.`
+      ]},
+      { id: 12, name: "Holiday Cards", emoji: "💌", category: "Home", cpe: [
+        `You want to send holiday cards`,
+        `Obtaining appropriate photo from "Memories & Photos" cardholder. Creating address list and updating addresses if needed.`,
+        `Purchasing cards. Printing labels or addressing envelopes. Purchasing stamps (or asking "Mail" cardholder). Applying labels/stamps. Mailing cards.`
+      ]},
+      { id: 13, name: "Holidays", emoji: "🎄", category: "Home", cpe: [
+        `You celebrate holidays`,
+        `Conceiving a holiday plan (discussing with "Travel & Hosting" cardholders) for: family specialty dishes, decorations/décor, day-of holiday festivities/rituals/family gatherings. Note: "Gifts (Family)," "Gifts (VIPs)," and "Magical Beings" (e.g., Santa) are separate cards.`,
+        `Executing the holiday plan.`
+      ]},
+      { id: 14, name: "Home Furnishings", emoji: "🛋️", category: "Home", cpe: [
+        `The house needs furnishings`,
+        `Creating an inventory of what is needed. Researching items for price, look, and functionality.`,
+        `Purchasing items for the home: pots and pans, cutlery, dishes, towels, sheets, hand towels, pillows, mattresses, duvets, picture frames, candles, art/posters, appliances, bed frames, couches, dressers, chairs, tables, drapes/shades, stools, carpets/rugs, trash cans, lamps, bookshelves, outdoor items. Replacing broken/outdated items. Placing items in appropriate area (consult "Organizing" cardholder).`
+      ]},
+      { id: 15, name: "Home Goods & Supplies", emoji: "🧴", category: "Home", cpe: [
+        `Your family needs home goods & supplies`,
+        `Creating an inventory/master list (detergent, cleaning supplies, paper products, batteries, office supplies, bathroom supplies/toiletries, Ziploc bags, Tupperware, lunch boxes). Checking supplies for what is low.`,
+        `Shopping. Loading and unloading goods/supplies. Placing items in appropriate area (consult "Organizing" cardholder).`
+      ]},
+      { id: 16, name: "Home Maintenance", emoji: "🔧", category: "Home", cpe: [
+        `Things in the home will break`,
+        `Making a master list and keeping track of weekly/monthly/annual home tasks that involve maintenance. Sourcing professionals if applicable.`,
+        `OUTSOURCED: Hiring, making payments, communicating and supervising, placing orders for parts. INSOURCED (DIY): Plumbing (toilet, sink, garbage disposal, water issues), electrical (light bulbs, fixtures, wiring), interior (HVAC, smoke detectors, vents, insulation, cabinets, appliances, paint, fireplace, security, exterminator), exterior (roof/siding, tiles, gutters, power washing, pool, walkway, weatherproofing, driveway).`
+      ]},
+      { id: 17, name: "Home Purchase (Rental, Mortgage & Insurance)", emoji: "🏠", category: "Home", cpe: [
+        `Your family needs a place to live`,
+        `Researching neighborhoods (affordability with "Money Manager" cardholder, schools, parks, safety). Selecting realtor or broker. Attending open houses. Securing pre-approval. Managing financial documentation. Ensuring credit score is up to par. Budgeting for mortgage payment, property tax/insurance, assessments. Researching homeowners/renters insurance.`,
+        `Making offer and managing closing. Attending and managing inspections. Making down payment money available. Purchasing homeowners/renters insurance.`
+      ]},
+      { id: 18, name: "Lawn & Plants", emoji: "🌿", category: "Home", cpe: [
+        `You have a lawn & plants`,
+        `Researching appropriate plants for home (climate, sunlight, seasonal, water usage). Defining maintenance plan. Managing weather conditions. OUTSOURCED: Sourcing landscape/gardener.`,
+        `Executing maintenance plan. System control (sprinkler set-up, daylight saving times, local watering laws). Purchasing seeds, flowers, plants, fertilizer, supplies. Lawn/garden maintenance (mowing, fertilizing, weeds, pesticides). Pest control. Pruning/trimming/raking. Hiring, paying, managing pros if outsourced.`
+      ]},
+      { id: 19, name: "Laundry", emoji: "👕", category: "Home", cpe: [
+        `Laundry needs to be done, clothes need to be cleaned`,
+        `Sorting clothes. Reviewing clothing instructions (colors/whites/delicates).`,
+        `Spraying stains pre-wash. Washing/drying. Ironing/steaming. Hanging, folding, putting away.`
+      ]},
+      { id: 20, name: "Mail", emoji: "📬", category: "Home", cpe: [
+        `Mail needs to be handled`,
+        `Knowing when the mail comes and gets picked up. Planning what post office you will use and when it is open.`,
+        `Retrieving mail daily. Opening and sorting mail. Giving bills to "Cash & Bills" cardholder, tax forms to "Money Manager," invitations to "Calendar Keeper," and health insurance forms to "Health Insurance" cardholder. Purchasing stamps. Mailing outgoing. Shipping and picking up packages.`
+      ]},
+      { id: 21, name: "Meals (Weekday Breakfast)", emoji: "🍳", category: "Home", cpe: [
+        `Your family needs to eat breakfast`,
+        `Menu planning/recipe selection. Making lists of items needed (give to "Groceries" cardholder with appropriate amount of time or purchase yourself).`,
+        `Cooking/preparing. Serving. Putting dishes in sink for "Dishes" cardholder.`
+      ]},
+      { id: 22, name: "Meals (Weekday Dinner)", emoji: "🍝", category: "Home", cpe: [
+        `Your family needs to eat dinner`,
+        `Menu planning/recipe selection. Making lists of items needed (give to "Groceries" cardholder with appropriate amount of time or purchase yourself).`,
+        `Cooking/preparing. Serving. Putting dishes in sink for "Dishes" cardholder.`
+      ]},
+      { id: 23, name: "Meals (Weekend)", emoji: "🥘", category: "Home", cpe: [
+        `Your family needs to eat on weekends`,
+        `Menu planning/recipe selection. Making lists of items needed (give to "Groceries" cardholder with appropriate amount of time or purchase yourself).`,
+        `Cooking/preparing. Serving. Putting dishes in sink for "Dishes" cardholder.`
+      ]},
+      { id: 24, name: "Memories & Photos", emoji: "📸", category: "Home", cpe: [
+        `Does your family have photos?`,
+        `Researching photo storage and backup options: cloud options by storage fees and functionality, and/or hard drive. Signing up for cloud accounts, including managing usernames and passwords. Arranging family photo shoots.`,
+        `Taking pictures. Organizing digital photos into folders. Creating photo books and/or printing photos. Digitizing old photos (scan, upload, file). Creating home videos / photo montages.`
+      ]},
+      { id: 25, name: "Money Manager", emoji: "💰", category: "Home", cpe: [
+        `Is there money that needs to be managed?`,
+        `Researching investments. Researching broker/investment adviser/online brokerage and all issues related to retirement, college, emergency funds, etc. Tax planning.`,
+        `Managing investment accounts (including 401k/retirement and college funds). Managing family budget (income and expenses). Tax receipt and form collecting and filing appropriate forms (self, tax software, or with accountant). Depositing checks.`
+      ]},
+      { id: 26, name: "Pets", emoji: "🐾", category: "Home", cpe: [
+        `Your family has pets`,
+        `Researching pet type/breed. Finding breeder/rescue/shelter. Animal-proofing. Researching & interviewing vet. Handling vet checkup appointments. Finding a groomer. Determining pet insurance. Handling vet sick appointments. Securing care during out-of-town travel. Researching & purchasing appropriate food.`,
+        `Receiving pet. Purchasing food, treats, grooming items, bedding, crate, harness, litter. Training (bathroom, sleeping, biting, introducing to babies/children). Feeding daily and keeping bowls clean. Bathing and brushing/attending grooming appointments. Outdoor access & walking. Pick up poop/empty litter box. Cleaning up after pet.`
+      ]},
+      { id: 27, name: "Points, Miles & Coupons", emoji: "🎫", category: "Home", cpe: [
+        `Your family has airline miles and coupons`,
+        `Researching loyalty programs and credit cards. Sourcing coupons (online/subscription, store flyers, local newspapers, apps, in mail).`,
+        `Creating electronic and/or in-home filing system to manage coupons. Using miles/points/coupons before they expire.`
+      ]},
+      { id: 28, name: "Returns & Store Credit", emoji: "↩️", category: "Home", cpe: [
+        `Your family purchases things that might need to be returned`,
+        `Keeping track of items that need to be returned. Figuring out store return policy.`,
+        `Returning items within the return window. Donating or reselling items (if expired). Purchasing items with store credits. Managing gift cards and giving them to other cardholders (e.g., "Clothes & Accessories (kids)") when appropriate.`
+      ]},
+      { id: 29, name: "Safety & Emergency", emoji: "🩹", category: "Home", cpe: [
+        `Your family needs to be safe`,
+        `Developing emergency list/plan to include contacts, medical directions, home shut-off systems, etc. Researching car seats.`,
+        `Creating first-aid kit and other supplies, such as extra food/flashlights, etc., for home and car. Earthquake-proofing/childproofing home. Purchasing and installing car seats.`
+      ]},
+      { id: 30, name: "Storage, Garage & Seasonal Items", emoji: "🗄️", category: "Home", cpe: [
+        `You have storage`,
+        `Inventory management of summer/beach/lake/camping/bikes/pool items or winter items. Researching and renting storage unit.`,
+        `Managing items in garage (bins, racks, shelving) or giving to "Tidying Up, Organizing & Donations" cardholder. Tidying shelves and storage. Air in bicycle tires, sports balls, pool rafts. Organize sports/ski/camping equipment and luggage.`
+      ]},
+      { id: 31, name: "Tidying Up, Organizing & Donations", emoji: "🗂️", category: "Home", cpe: [
+        `Things need to be organized and tidy`,
+        `Developing a system for organizing your physical home (closets, kitchen/pantry, bedrooms, playroom, office) and digital home (organizing computer files with "Memories & Photos" cardholder). Taking stock of children's items to donate/hand down. Creating list of donated items and value for tax purposes. Researching donation destinations. Identifying storage needs.`,
+        `Clearing/wiping counters. Putting away toys and shoes. Tidying throw blankets and pillows. Safely storing important documents (birth certificates, passports, Social Security cards). Gathering items to be donated from "Clothes & Accessories (kids)" and "Wardrobe" cardholders. Dropping off donations. Purchasing/assembling storage containers.`
+      ]},
+      { id: 32, name: "Weekend Plans", emoji: "🎲", category: "Home", cpe: [
+        `You have weekends with your family`,
+        `Reviewing weekend schedule (working with "Calendar Keeper" cardholder to see what periods of time are open for plans). Checking weather forecast. Asking family members for ideas. Coordinating with friends and family.`,
+        `Communicating the plan to your family. Executing the plan for the weekend.`
+      ]},
+      { id: 33, name: "Hosting", emoji: "🥂", category: "Home", cpe: [
+        `You want to have people over`,
+        `Creating plan for the event. Curating guest list. Managing RSVPs. Coordinating what guests may bring.`,
+        `Sending invitations. Purchasing/rentals: food, drinks, tableware, flowers, music, seating. Decorating (streamers, balloons, flowers, place cards, centerpieces, confetti). Hiring servers/helpers. Setting up. Cleaning up.`
+      ]},
+
+      // ── KIDS ──
+      { id: 34, name: "Bathing & Grooming (Kids)", emoji: "🛁", category: "Kids", cpe: [
+        `The kids need to be clean`,
+        `Scheduling haircuts. Monitoring supply of bath products, detangler, scissors, toothbrushes and floss and notifying "Home Goods & Supplies" cardholder.`,
+        `Carrying out haircuts. Managing daily showers/baths including washing/brushing hair/brushing teeth. Cutting nails and toenails. Boo-boo care. Age-appropriate add-ons (deodorant, period care, razors, lotion, hair dryer, etc.). Conducting lice checks when needed.`
+      ]},
+      { id: 35, name: "Bedtime Routine (Kids)", emoji: "🌙", category: "Kids", cpe: [
+        `The kids need to go to sleep`,
+        `Encouraging reading or quiet activity before bed. Coordinating with "Bathing & Grooming (Kids)" cardholder to follow their lead on routine schedule.`,
+        `Enforcing lights-out policy at particular time. Reading with kids. Bringing kids to the bathroom. Filling bedside water glass.`
+      ]},
+      { id: 36, name: "Birthday Celebrations (Other Kids)", emoji: "🎉", category: "Kids", cpe: [
+        `The kids are invited to a birthday party`,
+        `RSVPing to invitations (informing "Calendar Keeper" cardholder). Arranging for transportation/attending if younger child.`,
+        `Purchasing stickers/cards, wrapping, gift cards and/or birthday gifts. Wrapping gift(s). Filling out facility waivers (e.g., trampoline park). Providing money to child if necessary. Attending party if younger child.`
+      ]},
+      { id: 37, name: "Birthday Celebration (Your Kids)", emoji: "🎂", category: "Kids", cpe: [
+        `Your kids have birthdays`,
+        `Discussing party expectations with your child. Creating an invite list. Researching party location options, including available dates, pricing, and number of children allowed. Planning family dinner and other special surprises for day of. In-school birthday party preparation and supplies.`,
+        `Booking entertainment. Designing an online invitation or ordering printed ones and sending. Ordering favors, decorations, cake, candles, and paper products for party. Note: Purchasing gifts is the responsibility of the "Gifts (Family)" cardholder.`
+      ]},
+      { id: 38, name: "Childcare Helpers (Kids)", emoji: "🧑‍🍼", category: "Kids", cpe: [
+        `Someone needs to be able to help with the children`,
+        `Discussing with stakeholders what is needed for the home at this stage of life. Sourcing if not family (websites/word of mouth/agency). Transportation concerns: car seats, boosters, etc. Interviewing (scheduling, conducting, reference checking). Scheduling days they will be working. Planning terms, including payment.`,
+        `Hiring (negotiating terms/contract). Ongoing communication & supervision. Making payments. Purchasing/providing meals & snacks for helper. Reimbursing: gas, meals, & other termination issues.`
+      ]},
+      { id: 39, name: "Clothes & Accessories (Kids)", emoji: "👚", category: "Kids", cpe: [
+        `The kids need clothes`,
+        `Sorting through child's current wardrobe. Determining which clothes still fit and which they have outgrown. Creating a list of clothing needs whether seasonal, by occasion or age (e.g., bras). Evaluating underwear, socks, shoes, and accessories. Arranging for try-on time. Coordinating with "Returns & Store Credits" cardholder if needed. Exception: clothes for special school days are the responsibility of "Homework, Projects, & School Supplies" cardholder.`,
+        `Donating or passing on those items they have outgrown to other children. Shopping for items in store or online.`
+      ]},
+      { id: 40, name: "Dental (Kids)", emoji: "🦷", category: "Kids", cpe: [
+        `The kids have teeth`,
+        `Researching and selecting dentist. Scheduling bi-annual dental cleanings. Informing "Bedtime Routine" cardholder about appropriate daily dental hygiene. Checking on toothbrush and toothpaste for when to replace and informing "Home Goods & Supplies" cardholder. Orthodontist visits if applicable.`,
+        `Attending dentist appointments. Following up with specialists like orthodontists. At-home orthodontic care (purchase and application of rubber bands, headgear, etc.).`
+      ]},
+      { id: 41, name: "Diapering & Potty Training (Kids)", emoji: "👶", category: "Kids", cpe: [
+        `The kids need bathroom support`,
+        `Determining diapering options (disposable brands or cloth). Taking inventory of diaper bags (wipes, diapers, creams, changing pad, pacifiers, extra change of clothes, loveys, toys, books, etc.). Researching, consulting with partner regarding training plan. Informing and enlisting teachers and childcare helpers in potty-training plan.`,
+        `Purchasing appropriately sized diapers/wipes as baby grows (or coordinating with "Home Goods & Supplies" cardholder). Stocking diaper bags. Overseeing implementation for potty training.`
+      ]},
+      { id: 42, name: "Discipline & Screen Time (Kids)", emoji: "📱", category: "Kids", cpe: [
+        `Your kids make mistakes`,
+        `Researching appropriate discipline for different life stages. Devising a strategy to recommend to your spouse. Setting up parental controls, negotiating what games/sites your kid can visit, downloading apps that turn the Wi-Fi off on your child's device after a certain number of minutes. Informing childcare helpers of limits as needed. Updating plan as needed.`,
+        `Informing child and enforcing limits.`
+      ]},
+      { id: 43, name: "Extracurricular (Kids; Non-Sports)", emoji: "🎨", category: "Kids", cpe: [
+        `Kids have extracurricular activities`,
+        `Determining child's desired activities. Researching all activity options (0–2: baby music, gymnastics, play groups; 2+: variety of options). Surveying child's friends to see if child can participate with friends (consult "Friendship" cardholder). Determining practice schedules. Managing at-home practice and arranging additional support/coaching (consult "Tutoring/Coaching"). Reviewing schedule with "Calendar Keeper," "Transportation (kids)," "Tutoring," and "Showing Up & Participating" cardholders. Arranging transportation.`,
+        `Signing up and registering. Purchasing/storing/updating items for activity. Packing necessary items in bag for practice (water bottle, snacks). Volunteering when necessary (snack sign-up, work backstage, etc.).`
+      ]},
+      { id: 44, name: "Extracurricular (Kids; Sports)", emoji: "⚽", category: "Kids", cpe: [
+        `Kids have extracurricular activities`,
+        `Determining child's desired activities. Researching all sports options (school, gyms, community leagues). Surveying child's friends. Determining practice and game schedules. Managing at-home practice and additional support/coaching. Researching equipment needs. Arranging transportation to practices and games.`,
+        `Signing up and registering for the sport/team. Purchasing/storing/laundering/updating necessary uniforms/equipment/cleats. Packing necessary items in bag for practice and games (uniform, water bottle, snacks). Volunteering when necessary (snack sign-up, end-of-season party, etc.).`
+      ]},
+      { id: 45, name: "Friendship & Social Media (Kids)", emoji: "💬", category: "Kids", cpe: [
+        `The kids need friends`,
+        `Friendship detective questions: evaluating child's social situation to see if they are making connections (who they play with at recess, sit with at lunch, anyone bullying them at school, are they confident with their time). Discussing friend situation with child at start of school year and working with "Teacher Communication" cardholder on any issues. Planning and scheduling sleepovers, outings, play dates with friends.`,
+        `Carrying out sleepovers, outings, play dates with friends. Monitoring and regulating social media accounts in coordination with "Discipline & Screen Time" cardholder.`
+      ]},
+      { id: 46, name: "Fun & Playing (Kids)", emoji: "🎈", category: "Kids", cpe: [
+        `You want your kids to have fun`,
+        `Planning consistent opportunities for family fun: game nights, reading together, playing sports, hiking, races, biking, running, building forts/blocks/Legos, playgrounds, amusement parks, magic, kites, science, tinkering, fun runs, dances, baking, special projects, etc.`,
+        `Executing consistent opportunities for family fun.`
+      ]},
+      { id: 47, name: "Gestures of Love (Kids)", emoji: "💗", category: "Kids", cpe: [
+        `You want your kids to feel loved and seen`,
+        `Creating plan for appropriate gestures. May include: flowers for recitals, notes on mirrors/lunch boxes, family hugs, surprise pick-up, etc.`,
+        `Following through on planned gestures.`
+      ]},
+      { id: 48, name: "Hard Questions (Kids)", emoji: "❓", category: "Kids", cpe: [
+        `Your kids have questions`,
+        `Determining the appropriate age to discuss certain topics with your child (puberty, gender, sex/pornography, sexuality, drugs/alcohol, suicide, religion, family choices). Connecting with friends who have older children to gather advice on how to introduce difficult topics. Consulting with doctors, professionals, and/or community resources when necessary.`,
+        `Purchasing age-appropriate books to help educate your children. Being available for and open when answering your children's questions.`
+      ]},
+      { id: 49, name: "Homework, Projects & School Supplies (Kids)", emoji: "📚", category: "Kids", cpe: [
+        `The kids have school`,
+        `Supervising welcome-to-school assignments (e.g., photos of my family). Assessing child's daily/weekly homework needs. Helping child prioritize what needs to be done based on after-school activity schedule. Updating "Calendar Keeper" & "School Breaks" cardholders on all important school dates including fall school recess, half-days, conference weeks, winter break.`,
+        `Assisting child when needed and providing emotional support when homework is challenging. Assisting with studying for tests. Supporting and purchasing supplies for major projects (science fair, school biography, secret buddy gifts, Valentines, etc.). Purchasing/arranging clothes for special days (school photos, performance concerts, field day, color wars, school theme days). Ordering school uniform if applicable. Ordering/shopping for back-to-school supplies.`
+      ]},
+      { id: 50, name: "Informal Education (Kids)", emoji: "🎓", category: "Kids", cpe: [
+        `You want your kids to learn`,
+        `Determining age-appropriate skills for children (shoe tying, buttoning a shirt, bike riding, etiquette/manners/how to write a thank you note, preparing a meal). Setting a chores list as they grow (coordinate with the related cardholders).`,
+        `Implement plan to impart skills. Modeling chores/manners. Enforcing a chores list as they grow.`
+      ]},
+      { id: 51, name: "Magical Beings (Kids)", emoji: "🧚", category: "Kids", cpe: [
+        `You celebrate holidays`,
+        `Determining which being to introduce (Tooth Fairy, Santa Claus, Easter Bunny, Elf on the Shelf, Mensch on a Bench, Saint Patrick's Day leprechauns, Switch Witch). Preparing a plan for each being introduced. Setting alarm. Having magical being talks (real vs. not real).`,
+        `Purchasing the magical being supplies. Executing plan.`
+      ]},
+      { id: 52, name: "Meals (Kids; School Lunch)", emoji: "🥪", category: "Kids", cpe: [
+        `The kids need to eat lunch`,
+        `INSOURCED: Menu and snack planning and purchasing containers (give list of items needed to "Home Goods & Supplies" cardholder or purchase yourself). OUTSOURCED: Log into school portal to order school lunch and/or add money to account (exception: all other school forms go to "School Forms" cardholder).`,
+        `Preparing and packing into container (including filling daily water bottle and providing utensils/ice packs). Staying apprised of what child is eating/not eating.`
+      ]},
+      { id: 53, name: "Medical & Healthy Living (Kids)", emoji: "🩺", category: "Kids", cpe: [
+        `The kids need to be healthy`,
+        `Researching, interviewing, and selecting pediatrician. Scheduling well checks, vaccine appointments, & annual physicals. Ensuring child has up-to-date vaccines. Keeping track of questions to ask doctor between well visits. Scheduling child's sick visits. Determining if specialists are necessary (eye doctor, GI, etc.). Prevention: researching vitamins & sunscreen. Encouraging active lifestyle. Ensuring healthy food options.`,
+        `Purchasing and stocking pain reliever/allergy medicines for children. Keeping specialty medicine up to date (EpiPen, asthma medications, nebulizers). Attending and taking notes during well checks and sick visits. Filling prescriptions, checking medicine side effects, administering medicine. Manage at-home medical issues (constipation, sleeping issues, allergies, GI, asthma, ENT). Purchasing vitamins and sunscreen. Monitoring family members' consumption of caffeine, alcohol, fried foods, smoking habits. Encouraging calming behaviors/quiet times.`
+      ]},
+      { id: 54, name: "Middle Of The Night Comfort (Kids)", emoji: "😴", category: "Kids", cpe: [
+        `The kids wake up in the middle of the night`,
+        `Making yourself available for your children following bedtime routine, including: trouble falling asleep, middle of the night feedings, night terrors, bed-wetting. Researching, creating a plan, gathering input from partner about sleep training.`,
+        `Executing plan for sleep training.`
+      ]},
+      { id: 55, name: "Morning Routine (Kids)", emoji: "☀️", category: "Kids", cpe: [
+        `The kids need to be ready in the morning`,
+        `Ensuring children are up and getting ready for the day (dressed in appropriate, seasonal clothes, hair/teeth brushed, bathroom needs met). Consulting with "Homework, Projects, & School Supplies" cardholder for special clothes days.`,
+        `Applying sunscreen. Taking vitamins/medicines.`
+      ]},
+      { id: 56, name: "Packing & Unpacking (Kids; Local)", emoji: "🎒", category: "Kids", cpe: [
+        `Kids need supplies for an activity`,
+        `BACKPACK / DAY-OUT BAG: Taking inventory of bags (water bottle, snacks, sunscreen, etc.). SLEEPOVER: Determine what is needed for overnight bag (bathroom bag, clothing, sleeping needs, medical, e.g., Epi-Pen). Note: If sleepover is a birthday celebration, keep packing with "Birthday Celebration (other kids)" cardholder.`,
+        `BACKPACK: Packing (snack, water bottle, lunch box, homework, library books/textbooks/folders, special items). Unpacking (emptying lunch box and placing in sink for "Dishes" cardholder). Following up on lost items/lost and found. AFTERNOON/DAY-OUT BAG: Stocking. SLEEPOVER: Overnight bag packing and unpacking.`
+      ]},
+      { id: 57, name: "School Breaks (Kids; Non-Summer)", emoji: "🗓️", category: "Kids", cpe: [
+        `Your children have breaks outside of summer`,
+        `Working in concert with "Childcare Helpers" cardholder to ensure appropriate childcare or camp. Planning for childcare/camps/playdates during breaks, half-days, and days off.`,
+        `Hiring (negotiating terms/contract). Ongoing communication and supervision. Making payments. Purchasing/providing meals and snacks for helper. Reimbursing: gas, meals, and other reimbursements. Termination issues.`
+      ]},
+      { id: 58, name: "School Breaks (Kids; Summer)", emoji: "🏖️", category: "Kids", cpe: [
+        `Your children have summer breaks`,
+        `Determining day camp/sleepaway camp, family travel, summer school, activities/classes, or home. Researching options for child's interests (sports, theater, art, religion, cooking, science, education), cost, and transportation. Inquiring/coordinating with friends' schedules. Mapping out each week of summer with "Calendar Keeper" to determine which activities fit which weeks, not conflicting with trips and other summer events.`,
+        `Registering for camps. Purchasing necessary items for camp (mostly sleepaway). Completing camp forms, including medical history, medication, transportation, medical consent, all about camper, bunk requests, etc.`
+      ]},
+      { id: 59, name: "School Forms (Kids)", emoji: "📄", category: "Kids", cpe: [
+        `The school has forms for kids`,
+        `Coordinate with "Packing & Unpacking (local)" and "Homework, Projects, & School Supplies" cardholders to see if forms come in backpack/homework folder. Forms may include: back-to-school packets (birth certificate, medical forms, immunization records, allergy notifications), field trip permission slips, random surveys, parent questionnaires, school photo order forms, book fair order forms, enrollment contracts, overdue library notices, accessing report card through school portal. Exception: School lunch forms go to "Meals (School Lunch)" cardholder.`,
+        `Managing login and password for school portal. Filling out forms (with child if applicable).`
+      ]},
+      { id: 60, name: "School Service (Kids)", emoji: "🏫", category: "Kids", cpe: [
+        `The kids have school`,
+        `Researching volunteer opportunities: stuffing folders, community service projects, admin work for teachers/staff, room parent, working with students in small groups, baking for teachers, concerts, field trip chaperone, picnics and potlucks, lunch/snack/carpool duty, school improvement projects, fundraisers, field day, art/book fairs, talent shows, STEM night, PTA, class parties, spirit wear, social parents' nights out. Signing up for your commitment and arranging childcare for other children.`,
+        `Showing up for and fulfilling your commitments.`
+      ]},
+      { id: 61, name: "School Transitions (Kids)", emoji: "🚪", category: "Kids", cpe: [
+        `The kids have school`,
+        `Researching potential school options for child. Scheduling any necessary academic testing (SAT/ACT). Requesting forms from current school (transcripts, etc.). Researching testing prep opportunities.`,
+        `Touring schools. Completing and submitting school applications or open-enrollment forms. Attending any mandatory informational meetings or additional get-to-know-you events (e.g., school fundraisers). Signing up for testing prep opportunities.`
+      ]},
+      { id: 62, name: "Showing Up & Participating (Kids)", emoji: "🙋", category: "Kids", cpe: [
+        `You need to show up for the kids`,
+        `Note: No CPE other than showing up on time. Play this card to feel included but not to have to do any of the work of the other cardholders.`,
+        `Attending (on time) children's games, shows, recitals, and other special presentations, curriculum/development/education nights.`
+      ]},
+      { id: 63, name: "Special Needs & Mental Health (Kids)", emoji: "💚", category: "Kids", cpe: [
+        `Your child has special needs or mental health concerns`,
+        `Identifying & evaluating child's current emotional state/special needs. Doctor/professional appointments for diagnosis & follow-up. Researching & interviewing specialists (therapists, OT, PT, speech). Discussing issues/treatment plan with child's teacher (consult "Teacher Communication" cardholder). Scheduling specialist appointments. Educating oneself, teachers, childcare helpers, other parents, and child on issue/risks/special needs/ancillary issues like bullying. FOR ALLERGIES/FOOD SENSITIVITIES: educating on how to read food labels, meeting with teacher, creating a notebook for classroom, pre-planning for birthday parties and events, calling ahead, researching safe restaurants.`,
+        `Working closely with "Health Insurance" cardholder for coverage and medications. Advocating & meeting with school educators to secure necessary supports (e.g., IEP). Supporting child. Attending specialist appointments. FOR ALLERGIES/FOOD SENSITIVITIES: purchasing EpiPen if needed, packing snack bin for classroom, meeting with school nurse, asking school to inform other parents, purchasing apps for grocery/restaurant guidance, always having safe snacks on hand.`
+      ]},
+      { id: 64, name: "Teacher Communication (Kids)", emoji: "👩‍🏫", category: "Kids", cpe: [
+        `You need to communicate with teachers`,
+        `Receiving and reading teacher emails. Scheduling parent-teacher conferences.`,
+        `Notifying child of important issues. Monitoring academic progress, behavior, socialization, and school absences. Attending parent-teacher conferences. Executing teacher recommendations/items to work on with child. Communicating plan to "Homework" and/or "Tutoring & Coaching" cardholders.`
+      ]},
+      { id: 65, name: "Transportation (Kids)", emoji: "🚙", category: "Kids", cpe: [
+        `Your kids need transport`,
+        `Coordinating and implementing the commute to/from school, extracurricular activities, enrichment, events, playdates, parties. If school bus, signing up for appropriate route. If public transportation, securing bus/subway pass. If carpool: selecting families that live nearby (coordinate booster/car seats), determining schedule for your shift and others'. Finalizing daily schedule with "Calendar Keeper."`,
+        `Implementing the commute to/from school, extracurricular activities, enrichment, events, playdates, parties.`
+      ]},
+      { id: 66, name: "Tutoring & Coaching", emoji: "✏️", category: "Kids", cpe: [
+        `Your kids need support`,
+        `TUTORING: Evaluating if child needs extra supports (discuss with "Teacher Communication" cardholder). Researching school-based options. Scheduling consistent time to conduct enrichment / determining if you practice or reinforce with child. COACHING: Appraising child's/team's needs (voice, sports, etc.). Researching external coaches. Reviewing weekend schedule. Checking weather forecast. Coordinating with friends and family.`,
+        `TUTORING: Hiring external tutor/signing up for tutoring program/practice or reinforce with child. Purchasing school enrichment materials. COACHING: Hiring external coaches and/or signing up/registering/conducting your coaching.`
+      ]},
+      { id: 67, name: "Values & Good Deeds (Kids)", emoji: "⭐", category: "Kids", cpe: [
+        `You want your kids to have values`,
+        `Considering values to impart. Researching allowance and consulting with "Cash & Bills" cardholder (spend, save, charity jars). Researching and scheduling family giving-back/community service opportunities.`,
+        `Attending family giving-back/community service opportunities. Modeling values.`
+      ]},
+      { id: 68, name: "Watching (Kids)", emoji: "👀", category: "Kids", cpe: [
+        `The kids need supervision`,
+        `BABY/TODDLER: Every minute (other cards you may be holding: "Morning Routine," "Fun & Playing," various "Meals," "Diapering & Potty Training," "Transportation," "Bathing & Grooming," "Extracurricular," "Bedtime Routine"). ELEMENTARY: ("Morning Routine," "Fun & Playing," "Meals," "Discipline & Screen Time," "Transportation," "Bathing & Grooming," "Friendship & Social Media," "Extracurricular," "Bedtime Routine"). TEENAGER: ("Morning Routine," "Fun & Playing," "Meals," "Discipline & Screen Time," "Transportation," "Bathing & Grooming," "Friendship & Social Media" — extra sensitive if a "friend" is more than a friend, "Extracurricular").`,
+        `Executing the plan for watching with full attention.`
+      ]},
+
+      // ── OUT ──
+      { id: 69, name: "Adult Friendships (Player 1)", emoji: "🤝", category: "Out", cpe: [
+        `You need friends`,
+        `Prioritizing which friends are most important to you. Scheduling coffee, lunches, dinners, events, trips with friends.`,
+        `Connecting with friends weekly (phone, text, email). Taking time to remember friends' birthdays, successes, challenges. Supporting friends during both happy and sad times.`
+      ]},
+      { id: 70, name: "Adult Friendships (Player 2)", emoji: "🤝", category: "Out", cpe: [
+        `You need friends`,
+        `Prioritizing which friends are most important to you. Scheduling coffee, lunches, dinners, events, trips with friends.`,
+        `Connecting with friends weekly (phone, text, email). Taking time to remember friends' birthdays, successes, challenges. Supporting friends during both happy and sad times.`
+      ]},
+      { id: 71, name: "Charity, Community Service & Good Deeds", emoji: "💝", category: "Out", cpe: [
+        `You want to give back to the community`,
+        `Researching charities.`,
+        `Making donations. Volunteering. Collecting donations for food banks/serving on charity boards. Meal trains and other community support. Visiting the sick.`
+      ]},
+      { id: 72, name: "Civic Engagement & Cultural Enrichment", emoji: "🏛️", category: "Out", cpe: [
+        `You want to give your family cultural enrichment`,
+        `Signing up for civic groups and voter registration drives. Researching opportunities (subscribing to local community, park, mall, bookstore, library events newsletters/emails/texts). Discussing cultural interests as a family.`,
+        `Attending meetings of homeowners' association, city council, Neighborhood Watch, etc. Purchasing tickets and/or memberships and attending (performing arts, sporting events, concerts, speaker series, museums/art exhibits, movies, comedy shows).`
+      ]},
+      { id: 73, name: "Extended Family", emoji: "👨‍👩‍👧‍👦", category: "Out", cpe: [
+        `You have extended family relationships`,
+        `Staying apprised of health, financial concerns, and lives of extended family. Deciding whom to see and planning dates/scheduling family dinners, visits, and reunions.`,
+        `Key milestone/time of year/illness calls and correspondence: birthday, holidays, graduations, illness/hospital visits, etc. Implementing extended family plans.`
+      ]},
+      { id: 74, name: "Gifts (Family)", emoji: "🎁", category: "Out", cpe: [
+        `You give gifts to family members`,
+        `Noting occasions (birthdays, holidays, Mother's/Father's Day) and people (children, parents, aunts/uncles, grandparents, etc.) that may require gifts. Exception: cards/correspondence for extended family, parents, and in-laws stay with those "Extended Family" and "Parents & In-Laws" cardholders.`,
+        `Purchasing birthday cards and presents (having children/partner sign). Wrapping presents. Shipping gifts if necessary.`
+      ]},
+      { id: 75, name: "Gifts (VIPs)", emoji: "🎀", category: "Out", cpe: [
+        `You give gifts to VIPs in your life`,
+        `Noting occasions (invite to someone's home, end of season coaching party, holiday time) and people (friends, coaches, teachers, childcare helpers, service providers such as mail carrier) that may require gifts.`,
+        `Purchasing cards and presents (having children/partner sign). Wrapping presents. Shipping gifts if necessary.`
+      ]},
+      { id: 76, name: "Packing & Unpacking (Travel)", emoji: "🧳", category: "Out", cpe: [
+        `Items are needed for travel`,
+        `Creating a packing list, including "morning of" travel packing list (snacks, fully charged electronics, headphones, sleep accessories). Packing list considerations: weather forecast and laundry opportunities. Determining suitcase needs and purchasing when necessary. Downloading, reading, and managing sleepaway camp packing list (if applicable).`,
+        `Purchasing items needed. Actual packing. Updating addresses on luggage tags. Charging all electronics before flying. Getting children involved in packing carry-on items, special items/loveys, medicine. For sleepaway camp and extended travel: ordering labels/Sharpie and labeling clothing with children's names. Printing or downloading tickets; making sure everyone who needs an ID has one. Filling car with gas if a road trip.`
+      ]},
+      { id: 77, name: "Parents & In-Laws", emoji: "👵", category: "Out", cpe: [
+        `You have parents / in-laws`,
+        `Plan for parent/in-law engagement. Calling/arranging for visits and visiting parents and in-laws an adequate amount (consult "Travel" cardholder). Becoming familiar with parents'/in-laws' health, including medical history, current medical issues, financial or other concerns.`,
+        `Purchasing and having family members sign or decorate cards for important occasions (birthday, holiday, Mother's/Father's Day). Handling parents'/in-laws' needs during visits, including airport transportation, activity/meal planning, taking vacation days to spend time with them. Managing parents'/in-laws' wishes for burial while alive. Educating on electronics/IT/other current issues.`
+      ]},
+      { id: 78, name: "Social Plans (Couples)", emoji: "🍷", category: "Out", cpe: [
+        `You want to be social with your partner`,
+        `RSVPing to party/night-out invitations. Discussing with partner who you both would like to see. Reaching out to friends/colleagues seeking plans. Coordinating schedules. Determining restaurant/event interest. Designating alcohol-free driver or calling an Uber.`,
+        `Working with "Childcare Helpers" cardholder to confirm babysitter. Making reservations. Purchasing tickets to events.`
+      ]},
+      { id: 79, name: "Spirituality", emoji: "🙏", category: "Out", cpe: [
+        `You want to practice spirituality`,
+        `Researching local churches/temples/synagogues/spiritual centers in your area. Registering for Sunday school / Hebrew school / confirmation class.`,
+        `Attending religious services on holidays or weekly. Educating children / rituals in the home. Buying high holiday tickets (if applicable).`
+      ]},
+      { id: 80, name: "Thank You Notes", emoji: "📝", category: "Out", cpe: [
+        `You want to express gratitude`,
+        `Obtaining appropriate information. Creating address list and updating addresses if needed.`,
+        `Printing labels or addressing envelopes. Purchasing stamps (or asking "Mail" cardholder to provide). Applying labels/stamps. Mailing cards.`
+      ]},
+      { id: 81, name: "Travel", emoji: "✈️", category: "Out", cpe: [
+        `You want to travel`,
+        `Sourcing vacation ideas (adult only or family, warm or cold climate, relaxation or adventure, domestic or international). Researching potential destinations: airfare, hotel, transportation, activities, dining, health or other travel alerts. Securing/renewing/checking expiration for everyone's passports. Discussing how much vacation time can be used from work. Selecting dates (that work for everyone, including kids in school). Calling hotel concierge for dining/activity recommendations. Researching activities and dining out. Working with "Points, Miles, & Coupons" cardholder to redeem miles.`,
+        `Checking in to flights. Making flight/hotel/rental car (car seats if necessary) reservations and confirming prior to travel. Purchasing travel insurance. Making reservations for activities and dining out.`
+      ]},
+
+      // ── WELLBEING ──
+      { id: 82, name: "Family Planning / Birth Control", emoji: "🌱", category: "Wellbeing", cpe: [
+        `Planning for a baby or birth control is needed`,
+        `Researching options (vasectomy, pill/IUD, condoms, etc.). Researching options (fertility apps, prenatal vitamins, lifestyle adjustments, etc.). Scheduling doctor appointment(s), if applicable.`,
+        `Implementing plan.`
+      ]},
+      { id: 83, name: "Grooming & Wardrobe (Player 1)", emoji: "💅", category: "Wellbeing", cpe: [
+        `You need to be presentable`,
+        `INSOURCED: Purchasing all necessary beauty products and tools, including makeup (lipstick, powder, mascara, eye liner/shadow, foundation, eyebrow liner), tweezers, deodorant, moisturizers/lotions/anti-aging creams, makeup removers, hairspray, gel, mousse, hair accessories, nail polish, nail kit, hair dye.`,
+        `INSOURCED: Applying/using all necessary beauty products and tools. OUTSOURCED: Hair removal appointments. Haircut/blow-dry/color/highlights/straightening/extensions (hair, lashes). Nail appointments. Facials/injection appointments. Tattoos. Piercings.`
+      ]},
+      { id: 84, name: "Grooming & Wardrobe (Player 2)", emoji: "💅", category: "Wellbeing", cpe: [
+        `You need to be presentable`,
+        `Looking through own current wardrobe. Determining which clothes still fit and which might be outdated or worn out. Creating a list of clothing needs whether seasonal or by occasion. Evaluating underwear, socks, shoes, belts, and other accessories.`,
+        `Donating wrong-size, outdated, worn-out items. Shopping for necessary items.`
+      ]},
+      { id: 85, name: "Marriage & Romance", emoji: "💑", category: "Wellbeing", cpe: [
+        `You have a partnership`,
+        `Conceiving thoughtful gestures for your spouse (gifts, cooking a meal, a note, flowers). Ensuring that time is set aside for just the two of you on a regular basis. Scheduling date nights, including making dinner reservations, show tickets, etc. Scheduling couple-only trips with "Travel" cardholder. Planning time for intimacy.`,
+        `Executing consistent opportunities for connection.`
+      ]},
+      { id: 86, name: "Partner Coach", emoji: "✨", category: "Wellbeing", cpe: [
+        `You are in a partnership`,
+        `Consulting with spouse about what is needed to enrich career. Examples include: writing/editing/reviewing resumes, emails, contracts, and other business-related correspondence. Fostering relationships with spouse's boss/co-workers. Writing/editing/reviewing resumes, manuscripts, presentations, talking points, spreadsheets, speeches, and other work product.`,
+        `Following through on what your partner needs and spending the appropriate amount of time doing so with your full attention.`
+      ]},
+      { id: 87, name: "Self-Care (Player 1)", emoji: "🧘", category: "Wellbeing", cpe: [
+        `You need to take care of yourself`,
+        `Determining self-care plan, possibly including: nutrition/supplements, exercise routine, doctor and dental appointments (annual physical and mammogram, bloodwork, dental exam/cleaning, ophthalmology, GI, other specialists), medications, massage/acupuncture, meditation/quiet time/relaxing (TV)/reading, baths.`,
+        `Showing up for and fulfilling your commitments.`
+      ]},
+      { id: 88, name: "Self-Care (Player 2)", emoji: "🧘", category: "Wellbeing", cpe: [
+        `You need to take care of yourself`,
+        `Determining self-care plan, possibly including: nutrition/supplements, exercise routine, doctor and dental appointments (annual physical and mammogram, bloodwork, dental exam/cleaning, ophthalmology, GI, other specialists), medications, massage/acupuncture, meditation/quiet time/relaxing (TV)/reading, baths.`,
+        `Showing up for and fulfilling your commitments.`
+      ]},
+      { id: 89, name: "Unicorn Space (Player 1)", emoji: "🦄", category: "Wellbeing", cpe: [
+        `Unicorn Space is about the curiosity and purpose that drive you to be the best version of yourself.`,
+        `Identify a curiosity — what would you like to create more time and mental and physical space for today? Plan to share it with the world. Set a goal — put yourself on a committed schedule that includes a specific timeline by which you will reveal it to others. Get your partner's support and support them in return. Schedule a weekly time for your Unicorn Space and prioritize it!`,
+        `Reclaim your gifts beyond your family and career without needing permission. Don't allow guilt, shame, or "domestic encroachment" to cause you to miss your scheduled time. Share your Unicorn Space with the world!`
+      ]},
+      { id: 90, name: "Unicorn Space (Player 2)", emoji: "🦄", category: "Wellbeing", cpe: [
+        `Unicorn Space is about the curiosity and purpose that drive you to be the best version of yourself.`,
+        `Identify a curiosity — what would you like to create more time and mental and physical space for today? Plan to share it with the world. Set a goal — put yourself on a committed schedule that includes a specific timeline by which you will reveal it to others. Get your partner's support and support them in return. Schedule a weekly time for your Unicorn Space and prioritize it!`,
+        `Reclaim your gifts beyond your family and career without needing permission. Don't allow guilt, shame, or "domestic encroachment" to cause you to miss your scheduled time. Share your Unicorn Space with the world!`
+      ]},
+
+      // ── WILD (life-changing scenarios) ──
+      { id: 91,  name: "Aging / Ailing Parent", emoji: "👴", category: "Wild", cpe: [
+        `A parent's age or illness now requires significant family support.`, WILD_PLANNING, WILD_EXECUTION
+      ]},
+      { id: 92,  name: "Death", emoji: "🕊️", category: "Wild", cpe: [
+        `A family member or close loved one has died.`, WILD_PLANNING, WILD_EXECUTION
+      ]},
+      { id: 93,  name: "First Year of Infant's Life", emoji: "🍼", category: "Wild", cpe: [
+        `You're in the all-consuming first year of caring for a newborn.`, WILD_PLANNING, WILD_EXECUTION
+      ]},
+      { id: 94,  name: "Glitch In The Matrix / Daily Disruption", emoji: "⚡", category: "Wild", cpe: [
+        `An unexpected disruption (illness, school closure, last-minute change) has thrown the day off course.`, WILD_PLANNING, WILD_EXECUTION
+      ]},
+      { id: 95,  name: "Home Renovation", emoji: "🏗️", category: "Wild", cpe: [
+        `A major home renovation is underway, eating into time, money, and headspace.`, WILD_PLANNING, WILD_EXECUTION
+      ]},
+      { id: 96,  name: "Job Loss & Money Problems", emoji: "💼", category: "Wild", cpe: [
+        `A job loss or serious financial strain is reshaping daily life.`, WILD_PLANNING, WILD_EXECUTION
+      ]},
+      { id: 97,  name: "Moving", emoji: "📦", category: "Wild", cpe: [
+        `You're moving to a new home — packing, logistics, and a thousand small transitions.`, WILD_PLANNING, WILD_EXECUTION
+      ]},
+      { id: 98,  name: "New Job", emoji: "🆕", category: "Wild", cpe: [
+        `One of you is starting a new job — onboarding, schedule changes, and a mental-load shift.`, WILD_PLANNING, WILD_EXECUTION
+      ]},
+      { id: 99,  name: "Serious Illness", emoji: "🤒", category: "Wild", cpe: [
+        `A serious illness in the family is demanding urgent attention.`, WILD_PLANNING, WILD_EXECUTION
+      ]},
+      { id: 100, name: "Welcoming A Child Into The Home", emoji: "🤱", category: "Wild", cpe: [
+        `A new child has joined your family (birth, adoption, fostering, blended family).`, WILD_PLANNING, WILD_EXECUTION
+      ]},
     ];
 
     let me = null, p1name = '', p2name = '';
