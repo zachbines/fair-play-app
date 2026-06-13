@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     :root {
+      accent-color: #C4714A; /* terracotta — overrides system blue in native form controls */
       --cream: #FAF7F2;
       --warm-white: #FFFDF9;
       --sand: #E8E0D0;
@@ -934,8 +935,25 @@
       font-family: 'DM Sans', sans-serif;
       color: var(--charcoal);
       outline: none;
+      caret-color: var(--terracotta);
+      accent-color: var(--terracotta);
     }
     .reminder-time-row input[type="time"]:focus { border-color: var(--terracotta); }
+    /* Restyle the per-field highlight (hour / minute / am-pm) to use brand color
+       instead of the OS blue. WebKit/Blink only — Firefox time inputs ignore these. */
+    .reminder-time-row input[type="time"]::-webkit-datetime-edit-hour-field:focus,
+    .reminder-time-row input[type="time"]::-webkit-datetime-edit-minute-field:focus,
+    .reminder-time-row input[type="time"]::-webkit-datetime-edit-second-field:focus,
+    .reminder-time-row input[type="time"]::-webkit-datetime-edit-ampm-field:focus {
+      background-color: var(--terracotta);
+      color: white;
+      outline: none;
+      border-radius: 4px;
+    }
+    .reminder-time-row input[type="time"]::selection {
+      background: var(--terracotta);
+      color: white;
+    }
     .reminder-monthday-row {
       margin-bottom: .85rem;
     }
