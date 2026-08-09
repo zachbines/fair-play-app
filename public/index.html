@@ -981,6 +981,56 @@
       margin-top: .5rem;
       line-height: 1.4;
     }
+    .reminder-sound-row {
+      margin-bottom: .85rem;
+    }
+    .reminder-sound-row label {
+      display: block;
+      font-size: .78rem;
+      color: var(--mid-gray);
+      margin-bottom: .35rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .reminder-sound-controls {
+      display: flex;
+      gap: .5rem;
+      align-items: stretch;
+    }
+    .reminder-sound-row select {
+      flex: 1;
+      border: 1.5px solid var(--sand);
+      border-radius: 10px;
+      padding: .65rem .8rem;
+      background: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--charcoal);
+      outline: none;
+    }
+    .reminder-sound-preview {
+      flex: 0 0 auto;
+      border: 1.5px solid var(--sand);
+      border-radius: 10px;
+      background: var(--cream);
+      color: var(--charcoal);
+      padding: 0 .9rem;
+      font-size: .9rem;
+      cursor: pointer;
+    }
+    .reminder-sound-preview:active { background: var(--sand); }
+    .reminder-sound-preview:disabled { opacity: .5; cursor: default; }
+    .reminder-sound-custom {
+      width: 100%;
+      margin-top: .5rem;
+      border: 1.5px solid var(--sand);
+      border-radius: 10px;
+      padding: .65rem .8rem;
+      background: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--charcoal);
+      outline: none;
+    }
+    .reminder-sound-custom:focus, .reminder-sound-row select:focus { border-color: var(--terracotta); }
 
     /* Bell badge on card tile */
     .card-bell-badge {
@@ -1318,6 +1368,25 @@
           <label for="reminder-time">Time</label>
           <input type="time" id="reminder-time" value="09:00">
         </div>
+        <div class="reminder-sound-row">
+          <label for="reminder-sound">Sound</label>
+          <div class="reminder-sound-controls">
+            <select id="reminder-sound" onchange="onReminderSoundChange()">
+              <option value="">Default (Pushcut app)</option>
+              <option value="vibrateOnly">Vibrate only</option>
+              <option value="system">System</option>
+              <option value="subtle">Subtle</option>
+              <option value="question">Question</option>
+              <option value="jobDone">Job done</option>
+              <option value="problem">Problem</option>
+              <option value="loud">Loud</option>
+              <option value="lasers">Lasers</option>
+              <option value="__custom__">Custom…</option>
+            </select>
+            <button type="button" class="reminder-sound-preview" id="reminder-sound-preview" onclick="previewReminderSound()" title="Play this sound on the assigned partner's phone">▶</button>
+          </div>
+          <input type="text" id="reminder-sound-custom" class="reminder-sound-custom" placeholder="Exact name of an imported Pushcut sound" style="display:none;">
+        </div>
         <p class="reminder-tz-warning" id="reminder-tz-warning"></p>
       </div>
     </div>
@@ -1571,7 +1640,7 @@
     let confirmCallback = null;
 
     // Reminder editor state — mirrors what's shown in the card modal
-    let editingReminder = { enabled: false, frequency: 'daily', dayOfWeek: 'monday', dayOfMonth: 1, time: '09:00', lastFired: null };
+    let editingReminder = { enabled: false, frequency: 'daily', dayOfWeek: 'monday', dayOfMonth: 1, time: '09:00', sound: '', lastFired: null };
     // Cache of the latest /api/settings response (webhooks + timezone), used by the Settings sheet
     let notifSettings = { p1Webhook: '', p2Webhook: '', timezone: 'UTC' };
 
@@ -1840,9 +1909,10 @@
     function describeReminder(r) {
       if (!r || !r.enabled) return '';
       const time = formatReminderTime(r.time);
-      if (r.frequency === 'daily')   return `Daily · ${time}`;
-      if (r.frequency === 'weekly')  return `Weekly · ${DAY_DISPLAY[r.dayOfWeek] || r.dayOfWeek} · ${time}`;
-      if (r.frequency === 'monthly') return `Monthly · ${ordinal(r.dayOfMonth)} · ${time}`;
+      const snd = r.sound ? ` · ${SOUND_LABELS[r.sound] || r.sound}` : '';
+      if (r.frequency === 'daily')   return `Daily · ${time}${snd}`;
+      if (r.frequency === 'weekly')  return `Weekly · ${DAY_DISPLAY[r.dayOfWeek] || r.dayOfWeek} · ${time}${snd}`;
+      if (r.frequency === 'monthly') return `Monthly · ${ordinal(r.dayOfMonth)} · ${time}${snd}`;
       return '';
     }
 
@@ -1986,6 +2056,8 @@
 
     // ── REMINDER EDITOR ──
     const REMINDER_DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+    const BUILTIN_SOUNDS = ['vibrateOnly','system','subtle','question','jobDone','problem','loud','lasers'];
+    const SOUND_LABELS = { vibrateOnly:'Vibrate only', system:'System', subtle:'Subtle', question:'Question', jobDone:'Job done', problem:'Problem', loud:'Loud', lasers:'Lasers' };
 
     function loadReminderIntoForm(r) {
       const safe = {
@@ -1994,11 +2066,27 @@
         dayOfWeek: (r && r.dayOfWeek) || 'monday',
         dayOfMonth: (r && r.dayOfMonth) || 1,
         time: (r && r.time) || '09:00',
+        sound: (r && r.sound) || '',
         lastFired: (r && r.lastFired) || null,
       };
       editingReminder = safe;
       document.getElementById('reminder-enabled').checked = safe.enabled;
       document.getElementById('reminder-time').value = safe.time;
+      // Sound: a built-in selects itself; a non-empty non-built-in value is a
+      // custom Pushcut sound → pick "Custom…" and show its name in the text box.
+      const soundSel = document.getElementById('reminder-sound');
+      const soundCustom = document.getElementById('reminder-sound-custom');
+      if (soundSel && soundCustom) {
+        if (safe.sound && BUILTIN_SOUNDS.indexOf(safe.sound) === -1) {
+          soundSel.value = '__custom__';
+          soundCustom.value = safe.sound;
+          soundCustom.style.display = 'block';
+        } else {
+          soundSel.value = safe.sound;
+          soundCustom.value = '';
+          soundCustom.style.display = 'none';
+        }
+      }
       // Build month-day dropdown once
       const dom = document.getElementById('reminder-dom');
       if (dom && !dom.options.length) {
@@ -2036,6 +2124,47 @@
       });
     }
 
+    function onReminderSoundChange() {
+      const sel = document.getElementById('reminder-sound');
+      const custom = document.getElementById('reminder-sound-custom');
+      if (!sel || !custom) return;
+      const isCustom = sel.value === '__custom__';
+      custom.style.display = isCustom ? 'block' : 'none';
+      if (isCustom) custom.focus();
+    }
+
+    // Resolves the picked sound: a built-in value, the custom text, or '' (default).
+    function currentReminderSound() {
+      const sel = document.getElementById('reminder-sound');
+      if (!sel) return '';
+      if (sel.value === '__custom__') {
+        const custom = document.getElementById('reminder-sound-custom');
+        return custom ? custom.value.trim() : '';
+      }
+      return sel.value;
+    }
+
+    // Fires a one-off notification to the assigned partner so you can hear the pick.
+    async function previewReminderSound() {
+      if (!pendingOwner) { showToast('Assign the card first'); return; }
+      const sound = currentReminderSound();
+      const btn = document.getElementById('reminder-sound-preview');
+      if (btn) btn.disabled = true;
+      try {
+        const res = await fetch('/api/test-webhook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ who: pendingOwner, sound }),
+        });
+        const j = await res.json().catch(() => ({}));
+        showToast(res.ok && j.ok ? 'Preview sent →' : (j.error || 'No webhook set for that partner'));
+      } catch (e) {
+        showToast('Preview failed');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
     function buildRemindersFromForm() {
       const enabled = document.getElementById('reminder-enabled').checked;
       const time = document.getElementById('reminder-time').value || '09:00';
@@ -2047,6 +2176,7 @@
         dayOfWeek: editingReminder.dayOfWeek || 'monday',
         dayOfMonth: Math.min(Math.max(dayOfMonth, 1), 28),
         time,
+        sound: currentReminderSound(),
         lastFired: null,
       };
     }

@@ -121,7 +121,7 @@ const server = http.createServer(async (req, res) => {
   // API: POST /api/test-webhook — fires a test push to one of the configured webhooks
   if (pathname === '/api/test-webhook' && req.method === 'POST') {
     try {
-      const { who } = await readBody(req);
+      const { who, sound } = await readBody(req);
       const data = readData();
       const url = who === 'p1' ? data.settings?.p1Webhook : data.settings?.p2Webhook;
       if (!url) {
@@ -129,11 +129,13 @@ const server = http.createServer(async (req, res) => {
         res.end(JSON.stringify({ ok: false, error: 'No webhook configured for that partner' }));
         return;
       }
-      const ok = await postWebhook(url, {
+      const payload = {
         title: 'Fair Play',
-        text: '🔔 Test notification — your webhook is working',
-        // No `sound` sent: let the Pushcut notification play its configured sound.
-      });
+        text: sound ? `🔊 Sound preview: ${sound}` : '🔔 Test notification — your webhook is working',
+      };
+      // Preview the picked sound; omit to hear the notification's configured sound.
+      if (sound) payload.sound = sound;
+      const ok = await postWebhook(url, payload);
       res.writeHead(ok ? 200 : 502, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok }));
     } catch (e) {
@@ -327,12 +329,14 @@ async function checkAndFireReminders() {
     const cardEmoji = customCard?.emoji || '🔔';
 
     console.log(`⏰ Firing reminder for "${cardName}" → ${card.owner} (${maskWebhook(webhookUrl)})`);
-    const ok = await postWebhook(webhookUrl, {
+    const payload = {
       title: 'Fair Play',
       text: `${cardEmoji} ${cardName} is due today`,
-      // No `sound` sent: let the Pushcut notification play its configured sound.
-      // (Later: set this from the per-card sound dropdown.)
-    });
+    };
+    // Per-card sound from the reminder dropdown; omit to let the Pushcut
+    // notification play its own configured sound.
+    if (card.reminders && card.reminders.sound) payload.sound = card.reminders.sound;
+    const ok = await postWebhook(webhookUrl, payload);
     if (!ok) continue;  // leave lastFired untouched so we retry next tick
 
     // Re-read just before write to minimize race with concurrent /api/data POSTs
