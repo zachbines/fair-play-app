@@ -132,7 +132,7 @@ const server = http.createServer(async (req, res) => {
       const ok = await postWebhook(url, {
         title: 'Fair Play',
         text: '🔔 Test notification — your webhook is working',
-        sound: 'default',
+        // No `sound` sent: let the Pushcut notification play its configured sound.
       });
       res.writeHead(ok ? 200 : 502, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok }));
@@ -330,7 +330,8 @@ async function checkAndFireReminders() {
     const ok = await postWebhook(webhookUrl, {
       title: 'Fair Play',
       text: `${cardEmoji} ${cardName} is due today`,
-      sound: 'default',
+      // No `sound` sent: let the Pushcut notification play its configured sound.
+      // (Later: set this from the per-card sound dropdown.)
     });
     if (!ok) continue;  // leave lastFired untouched so we retry next tick
 
