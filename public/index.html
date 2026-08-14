@@ -284,19 +284,13 @@
     }
     .filter-chip.active { background: var(--charcoal); color: white; border-color: var(--charcoal); }
 
-    /* Filter bar = scrolling category chips + a fixed search button at the end */
-    .filter-bar {
-      display: flex; align-items: center; gap: .5rem;
-      margin-bottom: 1.25rem;
-    }
-    .filter-bar .filter-row {
-      margin-bottom: 0; flex: 1; min-width: 0;
-    }
+    /* Search button beside the "Cards" heading */
+    .deal-header-left { display: flex; align-items: center; gap: .6rem; }
     .filter-search-btn {
       flex: 0 0 auto;
-      width: 38px; height: 38px; border-radius: 50%;
+      width: 32px; height: 32px; border-radius: 50%;
       border: 1.5px solid var(--sand); background: white;
-      font-size: 1rem; cursor: pointer; padding: 0;
+      font-size: .95rem; cursor: pointer; padding: 0;
       display: flex; align-items: center; justify-content: center;
       transition: all .2s;
     }
@@ -1301,17 +1295,17 @@
     <!-- DEAL TAB -->
     <div id="tab-deal" class="tab-content active">
       <div class="deal-header">
-        <h2 class="deal-title">Cards</h2>
+        <div class="deal-header-left">
+          <h2 class="deal-title">Cards</h2>
+          <button class="filter-search-btn" id="filter-search-btn" onclick="toggleCardSearch()" aria-label="Search cards" title="Search cards">🔍</button>
+        </div>
         <span class="deal-count" id="deal-count"></span>
-      </div>
-      <div class="filter-bar">
-        <div class="filter-row" id="filter-row"></div>
-        <button class="filter-search-btn" id="filter-search-btn" onclick="toggleCardSearch()" aria-label="Search cards" title="Search cards">🔍</button>
       </div>
       <div class="search-row" id="search-row" style="display:none;">
         <input type="text" id="card-search-input" class="card-search-input" placeholder="Search cards…" oninput="onCardSearchInput(this.value)" autocomplete="off">
         <button class="card-search-clear" id="card-search-clear" onclick="clearCardSearch()" aria-label="Clear search">×</button>
       </div>
+      <div class="filter-row" id="filter-row"></div>
       <div class="cards-grid" id="cards-grid"></div>
     </div>
 
@@ -1900,11 +1894,9 @@
       renderCards();
     }
 
-    // The × inside the field: clear the text but keep searching.
+    // The × closes the search entirely (collapse + reset).
     function clearCardSearch() {
-      const input = document.getElementById('card-search-input');
-      if (input) { input.value = ''; input.focus(); }
-      cardSearchQuery = '';
+      resetCardSearchUI();
       renderCards();
     }
 
