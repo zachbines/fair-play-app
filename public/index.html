@@ -284,6 +284,42 @@
     }
     .filter-chip.active { background: var(--charcoal); color: white; border-color: var(--charcoal); }
 
+    /* Filter bar = scrolling category chips + a fixed search button at the end */
+    .filter-bar {
+      display: flex; align-items: center; gap: .5rem;
+      margin-bottom: 1.25rem;
+    }
+    .filter-bar .filter-row {
+      margin-bottom: 0; flex: 1; min-width: 0;
+    }
+    .filter-search-btn {
+      flex: 0 0 auto;
+      width: 38px; height: 38px; border-radius: 50%;
+      border: 1.5px solid var(--sand); background: white;
+      font-size: 1rem; cursor: pointer; padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .filter-search-btn.active { background: var(--charcoal); border-color: var(--charcoal); }
+
+    .search-row {
+      display: flex; align-items: center; gap: .5rem;
+      margin-bottom: 1.25rem;
+    }
+    .card-search-input {
+      flex: 1; min-width: 0;
+      border: 1.5px solid var(--sand); border-radius: 100px;
+      padding: .55rem 1rem; font-size: .9rem;
+      font-family: 'DM Sans', sans-serif; color: var(--charcoal);
+      background: white; outline: none;
+    }
+    .card-search-input:focus { border-color: var(--charcoal); }
+    .card-search-clear {
+      flex: 0 0 auto;
+      width: 32px; height: 32px; border: none; background: none;
+      font-size: 1.4rem; line-height: 1; color: var(--mid-gray); cursor: pointer;
+    }
+
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -1268,7 +1304,14 @@
         <h2 class="deal-title">Cards</h2>
         <span class="deal-count" id="deal-count"></span>
       </div>
-      <div class="filter-row" id="filter-row"></div>
+      <div class="filter-bar">
+        <div class="filter-row" id="filter-row"></div>
+        <button class="filter-search-btn" id="filter-search-btn" onclick="toggleCardSearch()" aria-label="Search cards" title="Search cards">🔍</button>
+      </div>
+      <div class="search-row" id="search-row" style="display:none;">
+        <input type="text" id="card-search-input" class="card-search-input" placeholder="Search cards…" oninput="onCardSearchInput(this.value)" autocomplete="off">
+        <button class="card-search-clear" id="card-search-clear" onclick="clearCardSearch()" aria-label="Clear search">×</button>
+      </div>
       <div class="cards-grid" id="cards-grid"></div>
     </div>
 
@@ -1633,6 +1676,7 @@
     let sharedData = { p1: '', p2: '', cards: {}, activity: [], customCards: [] };
     let lastHash = '';
     let activeFilter = 'All';
+    let cardSearchQuery = '';  // when non-empty, searches ALL cards and overrides the category filter
     let editingCard = null, pendingOwner = null;
     let editingFormCardId = null;
     let libraryFilter = 'All';
@@ -1831,14 +1875,62 @@
 
     function setFilter(cat, el) {
       activeFilter = cat;
+      resetCardSearchUI();  // picking a category exits search mode
       document.querySelectorAll('#filter-row .filter-chip').forEach(c => c.classList.remove('active'));
       if (el) el.classList.add('active');
       renderCards();
     }
 
+    // ── CARD SEARCH ──
+    function toggleCardSearch() {
+      const row = document.getElementById('search-row');
+      const willOpen = row.style.display === 'none';
+      if (willOpen) {
+        row.style.display = 'flex';
+        document.getElementById('filter-search-btn').classList.add('active');
+        document.getElementById('card-search-input').focus();
+      } else {
+        resetCardSearchUI();
+        renderCards();
+      }
+    }
+
+    function onCardSearchInput(v) {
+      cardSearchQuery = (v || '').trim().toLowerCase();
+      renderCards();
+    }
+
+    // The × inside the field: clear the text but keep searching.
+    function clearCardSearch() {
+      const input = document.getElementById('card-search-input');
+      if (input) { input.value = ''; input.focus(); }
+      cardSearchQuery = '';
+      renderCards();
+    }
+
+    // Fully collapse + reset the search UI (no render — caller renders).
+    function resetCardSearchUI() {
+      cardSearchQuery = '';
+      const input = document.getElementById('card-search-input');
+      if (input) input.value = '';
+      const row = document.getElementById('search-row');
+      if (row) row.style.display = 'none';
+      const btn = document.getElementById('filter-search-btn');
+      if (btn) btn.classList.remove('active');
+    }
+
+    function cardMatchesSearch(card, q) {
+      if ((card.name || '').toLowerCase().includes(q)) return true;
+      if ((card.category || '').toLowerCase().includes(q)) return true;
+      if (Array.isArray(card.cpe) && card.cpe.some(x => (x || '').toLowerCase().includes(q))) return true;
+      return false;
+    }
+
     function renderCards() {
       const pool = getActiveCards();
-      const filtered = activeFilter === 'All' ? pool : pool.filter(c => c.category === activeFilter);
+      const filtered = cardSearchQuery
+        ? pool.filter(c => cardMatchesSearch(c, cardSearchQuery))
+        : (activeFilter === 'All' ? pool : pool.filter(c => c.category === activeFilter));
       const dc = document.getElementById('deal-count');
       if (dc) {
         if (!pool.length) {
@@ -1858,9 +1950,12 @@
         return;
       }
       if (!filtered.length) {
+        const msg = cardSearchQuery
+          ? `No cards match “${escapeHtml(cardSearchQuery)}”.`
+          : 'No cards in this category.';
         grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
           <div class="empty-state-icon">🃏</div>
-          <p>No cards in this category.</p>
+          <p>${msg}</p>
         </div>`;
         return;
       }
