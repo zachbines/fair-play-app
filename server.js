@@ -123,8 +123,8 @@ const server = http.createServer(async (req, res) => {
     try {
       const { who, sound } = await readBody(req);
       const data = readData();
-      const url = who === 'p1' ? data.settings?.p1Webhook : data.settings?.p2Webhook;
-      if (!url) {
+      const urls = webhooksForOwner(data.settings, who);
+      if (!urls.length) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: false, error: 'No webhook configured for that partner' }));
         return;
@@ -135,7 +135,8 @@ const server = http.createServer(async (req, res) => {
       };
       // Preview the picked sound; omit to hear the notification's configured sound.
       if (sound) payload.sound = sound;
-      const ok = await postWebhook(url, payload);
+      const results = await Promise.all(urls.map(u => postWebhook(u, payload)));
+      const ok = results.some(Boolean);
       res.writeHead(ok ? 200 : 502, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok }));
     } catch (e) {
@@ -289,6 +290,15 @@ async function postWebhook(webhookUrl, payload) {
   }
 }
 
+// Webhook targets for a card owner. 'both' is a shared card: each partner gets
+// the push, so it resolves to every configured webhook rather than just one.
+function webhooksForOwner(settings, owner) {
+  const urls = owner === 'both'
+    ? [settings?.p1Webhook, settings?.p2Webhook]
+    : [owner === 'p1' ? settings?.p1Webhook : settings?.p2Webhook];
+  return urls.filter(Boolean);
+}
+
 function maskWebhook(u) {
   if (!u) return '(none)';
   return u.length > 40 ? u.slice(0, 30) + '…' + u.slice(-6) : u;
@@ -305,10 +315,9 @@ async function checkAndFireReminders() {
     if (!card || !card.reminders || !card.reminders.enabled) continue;
     if (!card.owner) continue;
 
-    const webhookUrl = card.owner === 'p1'
-      ? data.settings?.p1Webhook
-      : data.settings?.p2Webhook;
-    if (!webhookUrl) continue;
+    // A shared ('both') card reminds each partner, so this is a list of targets.
+    const webhookUrls = webhooksForOwner(data.settings, card.owner);
+    if (!webhookUrls.length) continue;
 
     const r = card.reminders;
     if (!withinFiringWindow(r.time, now.time)) continue;
@@ -328,7 +337,7 @@ async function checkAndFireReminders() {
     const cardName = customCard?.name || 'Task';
     const cardEmoji = customCard?.emoji || '🔔';
 
-    console.log(`⏰ Firing reminder for "${cardName}" → ${card.owner} (${maskWebhook(webhookUrl)})`);
+    console.log(`⏰ Firing reminder for "${cardName}" → ${card.owner} (${webhookUrls.map(maskWebhook).join(', ')})`);
     const payload = {
       title: 'Fair Play',
       text: `${cardEmoji} ${cardName} is due today`,
@@ -336,8 +345,10 @@ async function checkAndFireReminders() {
     // Per-card sound from the reminder dropdown; omit to let the Pushcut
     // notification play its own configured sound.
     if (card.reminders && card.reminders.sound) payload.sound = card.reminders.sound;
-    const ok = await postWebhook(webhookUrl, payload);
-    if (!ok) continue;  // leave lastFired untouched so we retry next tick
+    const results = await Promise.all(webhookUrls.map(u => postWebhook(u, payload)));
+    // Mark fired if any target got it — retrying would re-notify whoever already
+    // received it. Only a total failure leaves lastFired untouched for next tick.
+    if (!results.some(Boolean)) continue;
 
     // Re-read just before write to minimize race with concurrent /api/data POSTs
     const fresh = readData();
