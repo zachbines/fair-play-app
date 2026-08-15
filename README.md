@@ -7,7 +7,7 @@ A live-synced home management app for two partners, based on the Fair Play Metho
 - Build a shared **card bank** for your household — start empty, add only the cards that matter to you
 - Two ways to add: pick from a built-in library of 30 premade cards (bulk-select supported), or build a custom card from scratch
 - Every card is fully editable — name, emoji, category, and the three-step CPE breakdown (Conceive · Plan · Execute)
-- Assign each card to a partner with a shared "standard" for what done looks like
+- Assign each card to a partner — or to **both**, for the few you genuinely carry together — with a shared "standard" for what done looks like
 - Live sync — changes on one device appear on the other every 4 seconds
 - Activity feed showing who changed what and when
 - Rebalance tab for your monthly check-in conversations
@@ -53,8 +53,10 @@ A live-synced home management app for two partners, based on the Fair Play Metho
    - **Build a custom card** → start from scratch with your own name, emoji, category, and CPE steps.
 3. **Tweak cards** — open any card → **Edit card details** to change name, emoji, category, or the CPE breakdown. Edits apply everywhere that card appears.
 4. **Deal cards** — tap a card → pick the owner, write a shared "standard" for what done looks like.
+   Tap **both** names to make it a shared card: it shows both initials on the deal
+   grid and counts as **half a card** toward each partner's load.
 5. **Remove cards** — hover a card to reveal the × in the top-left corner, then confirm. Any assignment on it is cleared too.
-6. **Track & rebalance** — check the **Tracker** tab to see who owns what and the load split, or the **Rebalance** tab to one-tap swap cards between partners.
+6. **Track & rebalance** — check the **Tracker** tab to see who owns what and the load split, or the **Rebalance** tab to one-tap swap cards between partners. Shared cards are marked *Shared* in Rebalance and have no swap button — open the card itself to change who's on it.
 
 ---
 
@@ -86,7 +88,8 @@ All your shared state lives in `data.json`:
 
 - `p1`, `p2` — partner names
 - `customCards` — every card in your bank (whether you pulled it from the library or built from scratch). Library-sourced cards keep a `sourceId` reference so the picker can show an "In bank" badge.
-- `cards` — assignments (which card belongs to which partner, plus the agreed standard)
+- `cards` — assignments, keyed by card id: `{ owner, standard, changedBy, changedAt }`.
+  `owner` is `'p1'`, `'p2'`, or `'both'` (a shared card owned by each partner).
 - `activity` — recent change log
 
 The server reads/writes `/data/data.json` if a `/data` directory exists (e.g. a Railway Volume), otherwise it falls back to `data.json` next to `server.js`. Back this file up occasionally — it's your whole shared state.

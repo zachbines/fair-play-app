@@ -300,6 +300,14 @@
     .card-item:active { transform: scale(.97); }
     .card-item.assigned-p1 { border-color: var(--p1-color); background: #FDF8F5; }
     .card-item.assigned-p2 { border-color: var(--p2-color); background: #F5F7FB; }
+    /* Shared card: gradient border via the padding-box/border-box trick so the
+       two partner colours read as one card without losing the border radius. */
+    .card-item.assigned-both {
+      border-color: transparent;
+      background:
+        linear-gradient(135deg, #FDF8F5 0%, #F5F7FB 100%) padding-box,
+        linear-gradient(135deg, var(--p1-color), var(--p2-color)) border-box;
+    }
     .card-emoji { font-size: 1.6rem; margin-bottom: .5rem; }
     .card-name { font-size: .875rem; font-weight: 500; line-height: 1.3; }
     .card-owner-badge {
@@ -308,6 +316,8 @@
       display: flex; align-items: center; justify-content: center;
       font-size: .7rem; font-weight: 600; color: white;
     }
+    /* Shared cards show both initials, so the badge grows out of its circle. */
+    .card-owner-badge.both { width: auto; padding: 0 6px; letter-spacing: .5px; }
 
     /* FAB */
     .fab {
@@ -360,6 +370,7 @@
       display: flex; justify-content: space-between;
       margin-top: .5rem; font-size: .8rem; color: var(--mid-gray);
     }
+    .balance-note { margin-top: .5rem; font-size: .78rem; color: var(--light-gray); line-height: 1.45; }
     .tracker-list { display: flex; flex-direction: column; gap: .6rem; }
     .tracker-item {
       background: white; border-radius: 14px; padding: .9rem 1rem;
@@ -374,6 +385,7 @@
       font-size: .8rem; font-weight: 600; padding: .3rem .7rem;
       border-radius: 100px; color: white; white-space: nowrap; flex-shrink: 0;
     }
+    .tracker-owner.both { letter-spacing: .2px; }
     .tracker-standard { font-size: .8rem; color: var(--mid-gray); font-style: italic; margin-top: .2rem; line-height: 1.4; }
     .tracker-changed-by { font-size: .75rem; color: var(--light-gray); margin-top: .15rem; }
 
@@ -393,6 +405,12 @@
     .rebalance-info { flex: 1; min-width: 0; }
     .rebalance-name { font-size: .9rem; font-weight: 500; }
     .rebalance-assigned { font-size: .82rem; margin-top: .1rem; }
+    .rebalance-shared-tag {
+      background: var(--cream); border: 1.5px solid var(--sand);
+      border-radius: 100px; padding: .4rem .85rem;
+      font-size: .82rem; color: var(--mid-gray);
+      white-space: nowrap; flex-shrink: 0;
+    }
     .swap-btn {
       background: var(--cream); border: 1.5px solid var(--sand);
       border-radius: 100px; padding: .4rem .85rem;
@@ -494,6 +512,9 @@
     .assign-btn.p1.active { background: var(--p1-color); color: white; }
     .assign-btn.p2 { border-color: var(--p2-color); color: var(--p2-color); background: white; }
     .assign-btn.p2.active { background: var(--p2-color); color: white; }
+    .assign-both-hint {
+      margin-top: .6rem; font-size: .8rem; line-height: 1.45; color: var(--mid-gray);
+    }
 
     .sheet-actions { display: flex; gap: .6rem; margin-top: 1.25rem; }
     .btn-save {
@@ -1043,6 +1064,7 @@
           <span id="balance-p1-label"></span>
           <span id="balance-p2-label"></span>
         </div>
+        <div class="balance-note" id="balance-note" style="display:none"></div>
       </div>
       <div class="tracker-list" id="tracker-list"></div>
     </div>
@@ -1092,6 +1114,10 @@
     <div class="assign-row">
       <button class="assign-btn p1" id="assign-p1-btn" onclick="setAssignee('p1')"></button>
       <button class="assign-btn p2" id="assign-p2-btn" onclick="setAssignee('p2')"></button>
+    </div>
+    <div class="assign-both-hint" id="assign-both-hint" style="display:none">
+      Shared card — you both own this one. Fair Play works best with a single owner
+      per card, so save this for the few you genuinely carry together.
     </div>
     <div class="sheet-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
@@ -1995,9 +2021,8 @@
         let cls = '', badge = '';
         if (d) {
           cls = 'assigned-' + d.owner;
-          const init = d.owner === 'p1' ? (p1name[0] || '?') : (p2name[0] || '?');
-          const col = d.owner === 'p1' ? 'var(--p1-color)' : 'var(--p2-color)';
-          badge = `<div class="card-owner-badge" style="background:${col}">${escapeHtml(init)}</div>`;
+          const bothCls = d.owner === 'both' ? ' both' : '';
+          badge = `<div class="card-owner-badge${bothCls}" style="background:${ownerBg(d.owner)}">${escapeHtml(ownerInitials(d.owner))}</div>`;
         }
         return `<div class="card-item ${cls}" data-card-id="${escapeAttr(card.id)}">
           <button class="card-remove-btn" data-card-action="remove" aria-label="Remove card">×</button>
@@ -2077,6 +2102,28 @@
       });
     }
 
+    // ── OWNERSHIP HELPERS ──
+    // A card's `owner` is 'p1' | 'p2' | 'both'. 'both' means shared: each partner
+    // owns it, and it counts as half a card toward each side of the load balance.
+    function ownerLabel(owner) {
+      if (owner === 'both') return p1name + ' & ' + p2name;
+      return owner === 'p1' ? p1name : p2name;
+    }
+    function ownerInitials(owner) {
+      if (owner === 'both') return (p1name[0] || '?') + (p2name[0] || '?');
+      return owner === 'p1' ? (p1name[0] || '?') : (p2name[0] || '?');
+    }
+    // Background value — a gradient for shared cards, a flat colour otherwise.
+    function ownerBg(owner) {
+      if (owner === 'both') return 'linear-gradient(135deg, var(--p1-color), var(--p2-color))';
+      return owner === 'p1' ? 'var(--p1-color)' : 'var(--p2-color)';
+    }
+    // Text colour — a gradient can't paint text, so shared falls back to charcoal.
+    function ownerTextColor(owner) {
+      if (owner === 'both') return 'var(--charcoal)';
+      return owner === 'p1' ? 'var(--p1-color)' : 'var(--p2-color)';
+    }
+
     function openCard(id) {
       const card = findCard(id);
       if (!card) return;
@@ -2092,16 +2139,32 @@
         `<div class="cpe-item"><div class="cpe-letter">${['C','P','E'][i]}</div><div>${escapeHtml(item)}</div></div>`
       ).join('');
       updateAssignBtns();
-      document.getElementById('assign-p1-btn').classList.toggle('active', d.owner === 'p1');
-      document.getElementById('assign-p2-btn').classList.toggle('active', d.owner === 'p2');
+      syncAssignBtns();
       document.getElementById('unassign-btn').style.display = d.owner ? 'block' : 'none';
       openSheet('modal-overlay', 'modal-sheet');
     }
 
+    // The two name buttons are multi-select: light up both and the card becomes
+    // shared ('both'). Tapping a lit button drops that partner back off the card.
     function setAssignee(who) {
-      pendingOwner = pendingOwner === who ? null : who;
-      document.getElementById('assign-p1-btn').classList.toggle('active', pendingOwner === 'p1');
-      document.getElementById('assign-p2-btn').classList.toggle('active', pendingOwner === 'p2');
+      const other = who === 'p1' ? 'p2' : 'p1';
+      const hadWho = pendingOwner === who || pendingOwner === 'both';
+      const hadOther = pendingOwner === other || pendingOwner === 'both';
+      const wantsWho = !hadWho;
+      if (wantsWho && hadOther)      pendingOwner = 'both';
+      else if (wantsWho)             pendingOwner = who;
+      else if (hadOther)             pendingOwner = other;
+      else                           pendingOwner = null;
+      syncAssignBtns();
+    }
+
+    // Paints the assign row (and the shared-card hint) from pendingOwner.
+    function syncAssignBtns() {
+      const both = pendingOwner === 'both';
+      document.getElementById('assign-p1-btn').classList.toggle('active', both || pendingOwner === 'p1');
+      document.getElementById('assign-p2-btn').classList.toggle('active', both || pendingOwner === 'p2');
+      const hint = document.getElementById('assign-both-hint');
+      if (hint) hint.style.display = both ? 'block' : 'none';
     }
 
     async function saveCard() {
@@ -2112,7 +2175,7 @@
       const prev = sharedData.cards[String(id)];
       if (pendingOwner) {
         sharedData.cards[String(id)] = { owner: pendingOwner, standard, changedBy: me === 'p1' ? p1name : p2name, changedAt: Date.now() };
-        const ownerName = pendingOwner === 'p1' ? p1name : p2name;
+        const ownerName = ownerLabel(pendingOwner);
         addActivity(prev ? (prev.owner !== pendingOwner ? `assigned to ${ownerName} →` : 'updated') : 'dealt', card.name);
       } else if (prev) { delete sharedData.cards[String(id)]; addActivity('removed', card.name); }
       closeModal();
@@ -2522,38 +2585,53 @@
     }
 
     // ── TRACKER ──
+    // Loads can be halves (a shared card), so drop the decimal when it's whole.
+    function fmtLoad(n) { return Number.isInteger(n) ? String(n) : n.toFixed(1); }
+
     function renderTracker() {
       const assigned = Object.entries(sharedData.cards || {}).filter(([id]) => !!findCard(id));
       const p1c = assigned.filter(([, d]) => d.owner === 'p1');
       const p2c = assigned.filter(([, d]) => d.owner === 'p2');
-      const total = assigned.length || 1;
+      const shared = assigned.filter(([, d]) => d.owner === 'both').length;
+      // A shared card is half a card of load for each partner, so the two counts
+      // still sum to the number of dealt cards and the balance bar stays at 100%.
+      const p1load = p1c.length + shared / 2;
+      const p2load = p2c.length + shared / 2;
+      const total = (p1load + p2load) || 1;
       document.getElementById('tracker-players').innerHTML = `
         <div class="tracker-player-card">
           <div>
             <div class="tracker-player-name" style="color:var(--p1-color)">${p1name}</div>
-            <div class="tracker-player-count" style="color:var(--p1-color)">${p1c.length}</div>
+            <div class="tracker-player-count" style="color:var(--p1-color)">${fmtLoad(p1load)}</div>
             <div class="tracker-player-label">cards owned</div>
           </div>
         </div>
         <div class="tracker-player-card">
           <div>
             <div class="tracker-player-name" style="color:var(--p2-color)">${p2name}</div>
-            <div class="tracker-player-count" style="color:var(--p2-color)">${p2c.length}</div>
+            <div class="tracker-player-count" style="color:var(--p2-color)">${fmtLoad(p2load)}</div>
             <div class="tracker-player-label">cards owned</div>
           </div>
         </div>`;
-      const pct = Math.round((p1c.length / total) * 100);
+      const pct = Math.round((p1load / total) * 100);
       document.getElementById('balance-fill').style.width = pct + '%';
       document.getElementById('balance-p1-label').textContent = p1name + ' ' + pct + '%';
       document.getElementById('balance-p2-label').textContent = (100 - pct) + '% ' + p2name;
+      const note = document.getElementById('balance-note');
+      if (note) {
+        note.style.display = shared ? 'block' : 'none';
+        note.textContent = shared
+          ? shared + ' shared card' + (shared === 1 ? '' : 's') + ' — each counts as half toward both partners.'
+          : '';
+      }
       if (!assigned.length) {
         document.getElementById('tracker-list').innerHTML = `<div class="empty-state"><div class="empty-state-icon">🃏</div><p>No cards dealt yet.</p></div>`;
         return;
       }
       document.getElementById('tracker-list').innerHTML = assigned.map(([id, d]) => {
         const card = findCard(id); if (!card) return '';
-        const name = d.owner === 'p1' ? p1name : p2name;
-        const col = d.owner === 'p1' ? 'var(--p1-color)' : 'var(--p2-color)';
+        const isBoth = d.owner === 'both';
+        const name = ownerLabel(d.owner);
         return `<div class="tracker-item">
           <div class="tracker-emoji">${card.emoji}</div>
           <div class="tracker-info">
@@ -2562,7 +2640,7 @@
             ${d.standard ? `<div class="tracker-standard">"${d.standard}"</div>` : ''}
             ${d.changedBy ? `<div class="tracker-changed-by">Updated by ${d.changedBy} · ${timeAgo(d.changedAt)}</div>` : ''}
           </div>
-          <div class="tracker-owner" style="background:${col}">${name[0]}</div>
+          <div class="tracker-owner${isBoth ? ' both' : ''}" style="background:${ownerBg(d.owner)}">${isBoth ? 'Both' : name[0]}</div>
         </div>`;
       }).join('');
     }
@@ -2576,16 +2654,19 @@
       }
       document.getElementById('rebalance-grid').innerHTML = assigned.map(([id, d]) => {
         const card = findCard(id); if (!card) return '';
-        const name = d.owner === 'p1' ? p1name : p2name;
+        const isBoth = d.owner === 'both';
+        const name = ownerLabel(d.owner);
         const other = d.owner === 'p1' ? p2name : p1name;
-        const col = d.owner === 'p1' ? 'var(--p1-color)' : 'var(--p2-color)';
+        const col = ownerTextColor(d.owner);
         return `<div class="rebalance-item">
           <div class="rebalance-emoji">${card.emoji}</div>
           <div class="rebalance-info">
             <div class="rebalance-name">${card.name}</div>
             <div class="rebalance-assigned" style="color:${col}">→ ${name}</div>
           </div>
-          <button class="swap-btn" onclick="swapCard('${id}')">→ ${other}</button>
+          ${isBoth
+            ? `<span class="rebalance-shared-tag">Shared</span>`
+            : `<button class="swap-btn" onclick="swapCard('${id}')">→ ${other}</button>`}
         </div>`;
       }).join('');
     }
@@ -2594,6 +2675,8 @@
       if (!sharedData.cards[String(id)]) return;
       const card = findCard(id); if (!card) return;
       const prev = sharedData.cards[String(id)].owner;
+      // Shared cards have no "other" partner to swap to — change them from the card.
+      if (prev === 'both') { showToast("Shared card — open it to change owners"); return; }
       sharedData.cards[String(id)].owner = prev === 'p1' ? 'p2' : 'p1';
       sharedData.cards[String(id)].changedBy = me === 'p1' ? p1name : p2name;
       sharedData.cards[String(id)].changedAt = Date.now();
