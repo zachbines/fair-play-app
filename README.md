@@ -12,7 +12,8 @@ A live-synced home management app for two partners, based on the Fair Play Metho
 - Activity feed showing who changed what and when
 - Rebalance tab for your monthly check-in conversations
 - Hover any card to reveal an × and remove it from the bank (with confirmation)
-- **Optional push reminders via Pushcut** — schedule a daily / weekly / monthly nudge on any assigned card; the server fires a webhook at the right time and Pushcut delivers a native iOS push to the card's owner — or to **both partners** if the card is shared
+- **Optional push reminders via Pushcut** — schedule a daily / weekly / monthly nudge on any assigned card; the server fires a webhook at the right time and Pushcut delivers a native iOS push to the card's owner — or to **both partners** if
+  the card is shared. Tapping the notification opens that card straight away
 
 ---
 
@@ -95,6 +96,28 @@ All your shared state lives in `data.json`:
 - `activity` — recent change log
 
 The server reads/writes `/data/data.json` if a `/data` directory exists (e.g. a Railway Volume), otherwise it falls back to `data.json` next to `server.js`. Back this file up occasionally — it's your whole shared state.
+
+### Reminder deep links
+
+Tapping a reminder notification opens the app directly on that card. The server
+builds the link from its own public URL:
+
+- On Railway this is automatic — `RAILWAY_PUBLIC_DOMAIN` is used as-is.
+- Anywhere else (or to override), set `APP_BASE_URL`, e.g.
+  `APP_BASE_URL=https://fairplay.example.com`.
+
+If neither is set, reminders still send normally — they just aren't tappable.
+The startup log tells you which state you're in:
+
+```
+   Reminder deep links: https://fairplay.example.com/?card=…
+   Reminder deep links: OFF (set APP_BASE_URL to enable tap-to-open)
+```
+
+The link is `/?card=<cardId>`; the app opens that card's sheet and strips the
+parameter, so a refresh won't reopen it. If the link opens in a browser that has
+never seen the app, you'll pick which partner you are first and then land on the
+card.
 
 ### Resetting
 

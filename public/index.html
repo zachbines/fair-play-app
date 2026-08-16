@@ -2286,6 +2286,27 @@
       show('app'); startSync();
       // Pull notification settings (timezone is shown inside the reminder editor)
       fetchNotifSettings().catch(() => {});
+      // Let the app screen paint before the card sheet slides up.
+      setTimeout(consumeDeepLink, 50);
+    }
+
+    // ── DEEP LINK (?card=<id>) ──
+    // Reminder pushes link straight back here, so tapping one opens that card's
+    // sheet. Read at load but consumed from bootApp, which is the single funnel
+    // both startup paths go through — so the link still lands if it opens in a
+    // browser that has no saved identity and has to run setup first.
+    let pendingDeepLinkCard = new URLSearchParams(location.search).get('card');
+
+    function consumeDeepLink() {
+      const id = pendingDeepLinkCard;
+      pendingDeepLinkCard = null;
+      // Drop the param so a refresh — or sharing the URL later — doesn't reopen it.
+      if (id) history.replaceState(null, '', location.pathname);
+      if (!id) return;
+      if (!findCard(id)) { showToast('That card is no longer in your bank'); return; }
+      const navDeal = document.getElementById('nav-deal');
+      if (navDeal) switchTab('deal', navDeal);
+      openCard(id);
     }
 
     function updateAssignBtns() {

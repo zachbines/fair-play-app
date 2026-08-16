@@ -186,6 +186,10 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, () => {
   console.log(`\n✅ Fair Play is running at http://localhost:${PORT}`);
   console.log(`   Data stored at: ${DATA_FILE}`);
+  const base = appBaseUrl();
+  console.log(base
+    ? `   Reminder deep links: ${base}/?card=…`
+    : `   Reminder deep links: OFF (set APP_BASE_URL to enable tap-to-open)`);
   console.log(`   Reset password: ${RESET_PASSWORD}\n`);
   startReminderScheduler();
 });
@@ -290,6 +294,23 @@ async function postWebhook(webhookUrl, payload) {
   }
 }
 
+// Public base URL, used to deep-link a reminder back to the card it's about.
+// Railway sets RAILWAY_PUBLIC_DOMAIN; APP_BASE_URL overrides it and covers other
+// hosts. Empty means no link — reminders still send, just without tap-through.
+function appBaseUrl() {
+  const raw = (process.env.APP_BASE_URL || process.env.RAILWAY_PUBLIC_DOMAIN || '').trim();
+  if (!raw) return '';
+  const withScheme = /^https?:\/\//i.test(raw) ? raw : 'https://' + raw;
+  return withScheme.replace(/\/+$/, '');
+}
+
+// Deep link to a single card's sheet. Pushcut opens this when the notification
+// body is tapped (payload `defaultAction`).
+function cardDeepLink(cardId) {
+  const base = appBaseUrl();
+  return base ? `${base}/?card=${encodeURIComponent(cardId)}` : '';
+}
+
 // Webhook targets for a card owner. 'both' is a shared card: each partner gets
 // the push, so it resolves to every configured webhook rather than just one.
 function webhooksForOwner(settings, owner) {
@@ -345,6 +366,9 @@ async function checkAndFireReminders() {
     // Per-card sound from the reminder dropdown; omit to let the Pushcut
     // notification play its own configured sound.
     if (card.reminders && card.reminders.sound) payload.sound = card.reminders.sound;
+    // Tapping the notification opens this card's sheet in the app.
+    const link = cardDeepLink(cardId);
+    if (link) payload.defaultAction = { url: link };
     const results = await Promise.all(webhookUrls.map(u => postWebhook(u, payload)));
     // Mark fired if any target got it — retrying would re-notify whoever already
     // received it. Only a total failure leaves lastFired untouched for next tick.
