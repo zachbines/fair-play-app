@@ -5,7 +5,7 @@ A live-synced home management app for two partners, based on the Fair Play Metho
 ## What it does
 
 - Build a shared **card bank** for your household — start empty, add only the cards that matter to you
-- Two ways to add: pick from a built-in library of 30 premade cards (bulk-select supported), or build a custom card from scratch
+- Two ways to add: pick from a built-in library of 100 premade cards (bulk-select supported), or build a custom card from scratch
 - Every card is fully editable — name, emoji, category, and the three-step CPE breakdown (Conceive · Plan · Execute)
 - Assign each card to a partner — or to **both**, for the few you genuinely carry together — with a shared "standard" for what done looks like
 - Live sync — changes on one device appear on the other every 4 seconds
@@ -131,9 +131,11 @@ The server is resilient to short outages: if a reminder's scheduled minute is mi
 
 ## Customising the library
 
-The 30 premade cards live in the `LIBRARY` array in `public/index.html`. To add more options to the picker:
+The 100 premade cards — the canonical Fair Play deck, split across Home / Kids /
+Out / Wellbeing / Wild — live in the `LIBRARY` array in `public/index.html`. To add
+more options to the picker:
 ```js
-{ id: 31, name: "Card Name", emoji: "🏠", category: "Home",
+{ id: 101, name: "Card Name", emoji: "🏠", category: "Home",
   cpe: ["Conceive step", "Plan step", "Execute step"] }
 ```
 Existing users will see new library entries the next time they open the **From the library** picker. (Library entries are just templates — they only enter a household's bank when a user explicitly adds them.)
