@@ -8,6 +8,7 @@ A live-synced home management app for two partners, based on the Fair Play Metho
 - Two ways to add: pick from a built-in library of 100 premade cards (bulk-select supported), or build a custom card from scratch
 - Every card is fully editable — name, emoji, category, and the three-step CPE breakdown (Conceive · Plan · Execute)
 - Assign each card to a partner — or to **both**, for the few you genuinely carry together — with a shared "standard" for what done looks like
+- Filter the deck by partner and by category at the same time — two name pills above the category row
 - Live sync — changes on one device appear on the other every 4 seconds
 - Activity feed showing who changed what and when
 - Rebalance tab for your monthly check-in conversations
@@ -57,8 +58,9 @@ A live-synced home management app for two partners, based on the Fair Play Metho
 4. **Deal cards** — tap a card → pick the owner, write a shared "standard" for what done looks like.
    Tap **both** names to make it a shared card: it shows both initials on the deal
    grid and counts as **half a card** toward each partner's load.
-5. **Remove cards** — hover a card to reveal the × in the top-left corner, then confirm. Any assignment on it is cleared too.
-6. **Track & rebalance** — check the **Tracker** tab to see who owns what and the load split, or the **Rebalance** tab to one-tap swap cards between partners. Shared cards are marked *Shared* in Rebalance and have no swap button — open the card itself to change who's on it.
+5. **Filter the deck** — tap a partner's pill under the **Cards** heading to see only their cards; tap it again to clear. Shared cards show under both names. Person and category stack, so "Taylor + Home" shows just her Home cards, and the person pill narrows search results too.
+6. **Remove cards** — hover a card to reveal the × in the top-left corner, then confirm. Any assignment on it is cleared too.
+7. **Track & rebalance** — check the **Tracker** tab to see who owns what and the load split, or the **Rebalance** tab to one-tap swap cards between partners. Shared cards are marked *Shared* in Rebalance and have no swap button — open the card itself to change who's on it.
 
 ---
 

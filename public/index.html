@@ -284,6 +284,20 @@
     }
     .filter-chip.active { background: var(--charcoal); color: white; border-color: var(--charcoal); }
 
+    /* Person filter — two pills above the category row. Active state uses each
+       partner's colour, matching the assign row and the card badges. */
+    .person-row { display: flex; gap: .5rem; margin-bottom: .6rem; }
+    .person-chip {
+      flex: 1 1 0; min-width: 0;
+      padding: .45rem 1rem; border-radius: 100px;
+      border: 1.5px solid var(--sand); background: white;
+      font-size: .875rem; cursor: pointer; transition: all .2s;
+      font-family: 'DM Sans', sans-serif; color: var(--charcoal);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .person-chip.p1.active { background: var(--p1-color); border-color: var(--p1-color); color: white; }
+    .person-chip.p2.active { background: var(--p2-color); border-color: var(--p2-color); color: white; }
+
     /* Search button beside the "Cards" heading */
     .deal-header-left { display: flex; align-items: center; gap: .6rem; }
     .filter-search-btn {
@@ -1326,6 +1340,7 @@
         <input type="text" id="card-search-input" class="card-search-input" placeholder="Search cards…" oninput="onCardSearchInput(this.value)" autocomplete="off">
         <button class="card-search-clear" id="card-search-clear" onclick="clearCardSearch()" aria-label="Clear search">×</button>
       </div>
+      <div class="person-row" id="person-row"></div>
       <div class="filter-row" id="filter-row"></div>
       <div class="cards-grid" id="cards-grid"></div>
     </div>
@@ -2164,6 +2179,7 @@
     let sharedData = { p1: '', p2: '', cards: {}, activity: [], customCards: [] };
     let lastHash = '';
     let activeFilter = 'All';
+    let activePerson = null;   // null | 'p1' | 'p2'
     let cardSearchQuery = '';  // when non-empty, searches ALL cards and overrides the category filter
     let editingCard = null, pendingOwner = null;
     let editingFormCardId = null;
@@ -2377,9 +2393,34 @@
       document.getElementById('filter-row').innerHTML = cats.map(c =>
         `<button class="filter-chip ${c === activeFilter ? 'active' : ''}" onclick="setFilter('${jsString(c)}',this)">${escapeHtml(c)}</button>`
       ).join('');
+      renderPersonFilter();
       const fab = document.getElementById('fab-add');
       const onDealTab = document.getElementById('tab-deal').classList.contains('active');
       if (fab) fab.classList.toggle('hidden', !onDealTab);
+    }
+
+    // A person owns their own cards plus anything shared with them.
+    function cardBelongsTo(cardId, who) {
+      const d = sharedData.cards[String(cardId)];
+      return !!d && (d.owner === who || d.owner === 'both');
+    }
+
+    function renderPersonFilter() {
+      const row = document.getElementById('person-row');
+      if (!row) return;
+      row.innerHTML = [['p1', p1name], ['p2', p2name]].map(([key, name]) =>
+        `<button class="person-chip ${key} ${activePerson === key ? 'active' : ''}" ` +
+        `onclick="setPersonFilter('${key}')">${escapeHtml(name || '')}</button>`
+      ).join('');
+    }
+
+    // Person is an independent axis — it narrows whatever the category row (or
+    // the search box) already produced, so the two combine. Tapping the active
+    // pill clears it and shows everyone again.
+    function setPersonFilter(who) {
+      activePerson = activePerson === who ? null : who;
+      renderPersonFilter();
+      renderCards();
     }
 
     function setFilter(cat, el) {
@@ -2435,13 +2476,17 @@
 
     function renderCards() {
       const pool = getActiveCards();
-      const filtered = cardSearchQuery
+      let filtered = cardSearchQuery
         ? pool.filter(c => cardMatchesSearch(c, cardSearchQuery))
         : (activeFilter === 'All' ? pool : pool.filter(c => c.category === activeFilter));
+      if (activePerson) filtered = filtered.filter(c => cardBelongsTo(c.id, activePerson));
       const dc = document.getElementById('deal-count');
       if (dc) {
         if (!pool.length) {
           dc.textContent = '';
+        } else if (activePerson) {
+          const nm = activePerson === 'p1' ? p1name : p2name;
+          dc.textContent = `${filtered.length} with ${nm}`;
         } else {
           const asgn = filtered.filter(c => sharedData.cards[String(c.id)]).length;
           dc.textContent = `${asgn}/${filtered.length} assigned`;
@@ -2457,9 +2502,13 @@
         return;
       }
       if (!filtered.length) {
-        const msg = cardSearchQuery
-          ? `No cards match “${escapeHtml(cardSearchQuery)}”.`
-          : 'No cards in this category.';
+        const who = activePerson === 'p1' ? p1name : (activePerson === 'p2' ? p2name : '');
+        let msg;
+        if (cardSearchQuery && activePerson) msg = `No cards match “${escapeHtml(cardSearchQuery)}” for ${escapeHtml(who)}.`;
+        else if (cardSearchQuery)            msg = `No cards match “${escapeHtml(cardSearchQuery)}”.`;
+        else if (activePerson && activeFilter !== 'All') msg = `Nothing assigned to ${escapeHtml(who)} in ${escapeHtml(activeFilter)}.`;
+        else if (activePerson)               msg = `Nothing assigned to ${escapeHtml(who)} yet.`;
+        else                                 msg = 'No cards in this category.';
         grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
           <div class="empty-state-icon">🃏</div>
           <p>${msg}</p>
